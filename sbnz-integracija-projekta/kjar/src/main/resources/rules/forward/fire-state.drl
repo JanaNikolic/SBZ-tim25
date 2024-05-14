@@ -1,0 +1,211 @@
+package rules.forward
+
+import com.ftn.sbnz.model.models.enums.WindSpeed;
+import com.ftn.sbnz.model.models.FireIncident;
+import com.ftn.sbnz.model.models.ActiveFire;
+import com.ftn.sbnz.model.models.FirefighterObservation;
+import com.ftn.sbnz.model.models.enums.FireSize;
+import com.ftn.sbnz.model.models.enums.WindSpeed;
+import com.ftn.sbnz.model.models.enums.WindDirection;
+import com.ftn.sbnz.model.models.enums.Risk;
+import com.ftn.sbnz.model.models.enums.FireDevelopmentLocation;
+import com.ftn.sbnz.model.models.enums.StructureType;
+
+rule "Assign WindSpeed - LOW"
+when
+    $fi: FireIncident(windSpeed <= 1.2, $id : id)
+    $f: ActiveFire(fireIncidentId == $id, windSpeed != WindSpeed.LOW)
+then
+    modify($f) { setWindSpeed(WindSpeed.LOW) };
+end
+
+rule "Assign WindSpeed - MODERATE"
+when
+    $fi: FireIncident(windSpeed > 1.2 && windSpeed <= 9.3, $id : id)
+    $f: ActiveFire(fireIncidentId == $id, windSpeed != WindSpeed.MODERATE)
+then
+    modify($f) { setWindSpeed(WindSpeed.MODERATE) };
+end
+
+rule "Assign WindSpeed - HIGH"
+when
+    $fi: FireIncident(windSpeed > 9.3, $id : id)
+    $f: ActiveFire(fireIncidentId == $id, windSpeed != WindSpeed.HIGH)
+then
+    modify($f) { setWindSpeed(WindSpeed.HIGH) };
+end
+// TODO extract
+//rule "Assign Spread Direction"
+//when
+//    $f: ActiveFire(spreadDirection == null, $id : fireIncidentId)
+//    WindDirection($direction : VALUES) from WindDirection.values()
+//then
+//    modify($f) { setSpreadDirection($direction) };
+//end
+
+//rule "Sum of fire points from Firefighter Observations"
+//when
+//    $af: ActiveFire($id : fireIncidentId)
+//    Number( $firesPoints: intValue) from accumulate(
+//        FirefighterObservation(fireId == $id, $points : numOfFirePoints),
+//        sum($points)
+//    )
+//then
+//    modify($af) { setNumOfFirePoints($firesPoints) };
+//end
+//
+//rule "Fire size from Firefighter Observations"
+//when
+//    $af: ActiveFire($id : fireIncidentId)
+//    Number( $firesPoints: intValue) from accumulate(
+//        FirefighterObservation(fireId == $id, $points : numOfFirePoints),
+//        sum($points)
+//    )
+//then
+//    modify($af) { setNumOfFirePoints($firesPoints) };
+//end
+//TODO extract
+
+rule "Fire Development Location - OFFICE_BUILDING"
+when
+    $fi: FireIncident(structure == StructureType.OFFICE_BUILDING, $id : id)
+    $f: ActiveFire(fireIncidentId == $id)
+then
+    modify($f) { setFireDevelopmentLocation(FireDevelopmentLocation.CLOSED_SPACE) };
+end
+
+rule "Fire Development Location - AIRPORTS"
+when
+    $fi: FireIncident(structure == StructureType.AIRPORTS, $id : id)
+    $f: ActiveFire(fireIncidentId == $id)
+then
+    modify($f) { setFireDevelopmentLocation(FireDevelopmentLocation.OPEN_SPACE) };
+end
+
+rule "Fire Development Location - REFINERIES"
+when
+    $fi: FireIncident(structure == StructureType.REFINERIES, $id : id)
+    $f: ActiveFire(fireIncidentId == $id)
+then
+    modify($f) { setFireDevelopmentLocation(FireDevelopmentLocation.OPEN_SPACE) };
+end
+
+rule "Fire Development Location - INDUSTRIAL_PLANTS"
+when
+    $fi: FireIncident(structure == StructureType.INDUSTRIAL_PLANTS, $id : id)
+    $f: ActiveFire(fireIncidentId == $id)
+then
+    modify($f) { setFireDevelopmentLocation(FireDevelopmentLocation.OPEN_SPACE) };
+end
+
+rule "Fire Development Location - WAREHOUSES_OF_PETROLEUM_PRODUCTS"
+when
+    $fi: FireIncident(structure == StructureType.WAREHOUSES_OF_PETROLEUM_PRODUCTS, $id : id)
+    $f: ActiveFire(fireIncidentId == $id)
+then
+    modify($f) { setFireDevelopmentLocation(FireDevelopmentLocation.OPEN_SPACE) };
+end
+
+rule "Fire Development Location - MOTOR_VEHICLES"
+when
+    $fi: FireIncident(structure == StructureType.MOTOR_VEHICLES, $id : id)
+    $f: ActiveFire(fireIncidentId == $id)
+then
+    modify($f) { setFireDevelopmentLocation(FireDevelopmentLocation.OPEN_SPACE) };
+end
+
+rule "Fire Development Location - WAREHOUSE_OF_FLAMMABLE_LIQUIDS_AND_GASES"
+when
+    $fi: FireIncident(structure == StructureType.WAREHOUSE_OF_FLAMMABLE_LIQUIDS_AND_GASES, $id : id)
+    $f: ActiveFire(fireIncidentId == $id)
+then
+    modify($f) { setFireDevelopmentLocation(FireDevelopmentLocation.OPEN_SPACE) };
+end
+
+rule "Fire Development Location - PAINT_AND_VARNISH_FACTORY"
+when
+    $fi: FireIncident(structure == StructureType.PAINT_AND_VARNISH_FACTORY, $id : id)
+    $f: ActiveFire(fireIncidentId == $id)
+then
+    modify($f) { setFireDevelopmentLocation(FireDevelopmentLocation.OPEN_SPACE) };
+end
+
+rule "Fire Development Location - PAINT_SHOP"
+when
+    $fi: FireIncident(structure == StructureType.PAINT_SHOP, $id : id)
+    $f: ActiveFire(fireIncidentId == $id)
+then
+    modify($f) { setFireDevelopmentLocation(FireDevelopmentLocation.OPEN_SPACE) };
+end
+
+rule "Fire Development Location - LIBRARY or ARCHIVE"
+when
+    $fi: FireIncident((structure == StructureType.LIBRARY || structure == StructureType.ARCHIVE), $id : id)
+    $f: ActiveFire(fireIncidentId == $id)
+then
+    modify($f) { setFireDevelopmentLocation(FireDevelopmentLocation.CLOSED_SPACE) };
+end
+
+rule "Fire Development Location - MINE"
+when
+    $fi: FireIncident(structure == StructureType.MINE, $id : id)
+    $f: ActiveFire(fireIncidentId == $id)
+then
+    modify($f) { setFireDevelopmentLocation(FireDevelopmentLocation.OPEN_SPACE) };
+end
+
+rule "Fire Development Location - POWER_PLANT"
+when
+    $fi: FireIncident(structure == StructureType.POWER_PLANT, $id : id)
+    $f: ActiveFire(fireIncidentId == $id)
+then
+    modify($f) { setFireDevelopmentLocation(FireDevelopmentLocation.OPEN_SPACE) };
+end
+
+rule "Fire Development Location - SHIP"
+when
+    $fi: FireIncident(structure == StructureType.SHIP, $id : id)
+    $f: ActiveFire(fireIncidentId == $id)
+then
+    modify($f) { setFireDevelopmentLocation(FireDevelopmentLocation.OPEN_SPACE) };
+end
+
+rule "Fire Development Location - ELECTRICAL_INSTALLATION"
+when
+    $fi: FireIncident((structure == StructureType.ELECTRICAL_INSTALLATION), $id : id)
+    $f: ActiveFire(fireIncidentId == $id)
+then
+    modify($f) { setFireDevelopmentLocation(FireDevelopmentLocation.CLOSED_SPACE) };
+end
+
+rule "Fire Development Location - ELECTRONIC_DEVICE"
+when
+    $fi: FireIncident((structure == StructureType.ELECTRONIC_DEVICE), $id : id)
+    $f: ActiveFire(fireIncidentId == $id)
+then
+    modify($f) { setFireDevelopmentLocation(FireDevelopmentLocation.CLOSED_SPACE) };
+end
+
+rule "Fire Development Location - LABORATORY"
+when
+    $fi: FireIncident((structure == StructureType.LABORATORY), $id : id)
+    $f: ActiveFire(fireIncidentId == $id)
+then
+    modify($f) { setFireDevelopmentLocation(FireDevelopmentLocation.CLOSED_SPACE) };
+end
+
+rule "Fire Development Location - PHARMACY"
+when
+    $fi: FireIncident((structure == StructureType.PHARMACY), $id : id)
+    $f: ActiveFire(fireIncidentId == $id)
+then
+    modify($f) { setFireDevelopmentLocation(FireDevelopmentLocation.CLOSED_SPACE) };
+end
+
+rule "Fire Development Location - RESIDENTIAL_BUILDING"
+when
+    $fi: FireIncident(structure == StructureType.RESIDENTIAL_BUILDING, $id : id)
+    $f: ActiveFire(fireIncidentId == $id)
+then
+    modify($f) { setFireDevelopmentLocation(FireDevelopmentLocation.CLOSED_SPACE) };
+end

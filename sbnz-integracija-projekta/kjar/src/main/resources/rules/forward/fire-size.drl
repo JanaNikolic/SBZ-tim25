@@ -1,0 +1,111 @@
+package rules.forward
+
+import com.ftn.sbnz.model.models.ActiveFire;
+import com.ftn.sbnz.model.models.FirefighterObservation;
+import com.ftn.sbnz.model.models.enums.FireSize;
+import com.ftn.sbnz.model.models.enums.Risk;
+import com.ftn.sbnz.model.models.enums.WindSpeed;
+import com.ftn.sbnz.model.models.FireIncident;
+
+rule "Classify Fire Size from Fire Points - SMALL to MEDIUM"
+when
+    $f: ActiveFire(fireSize == FireSize.SMALL, numOfFirePoints > 2, numOfFirePoints < 4)
+then
+    modify($f) { setFireSize(FireSize.MEDIUM) };
+end
+
+rule "Classify Fire Size from Fire Points - MEDIUM to MEDIUM"
+when
+    $f: ActiveFire(fireSize == FireSize.MEDIUM, numOfFirePoints > 4)
+then
+    modify($f) { setFireSize(FireSize.LARGE) };
+end
+
+rule "Classify Fire Size - SMALL"
+when
+    $fi: FireIncident(volume <= 1.0, $id : id)
+    $f: ActiveFire(fireIncidentId == $id, fireSize != FireSize.SMALL)
+then
+    modify($f) { setFireSize(FireSize.SMALL) };
+end
+
+rule "Classify Fire Size - MEDIUM"
+when
+    $fi: FireIncident(volume > 1.0 && volume <= 5.0, $id : id)
+    $f: ActiveFire(fireIncidentId == $id, fireSize != FireSize.MEDIUM)
+then
+    modify($f) { setFireSize(FireSize.MEDIUM) };
+end
+
+rule "Classify Fire Size - LARGE"
+when
+    $fi: FireIncident(volume > 5.0 && volume <= 20.0, $id : id)
+    $f: ActiveFire(fireIncidentId == $id, fireSize != FireSize.LARGE)
+then
+    modify($f) { setFireSize(FireSize.LARGE) };
+end
+
+rule "Classify Fire Size - BLOCK"
+when
+    $fi: FireIncident(volume > 20.0, $id : id)
+    $f: ActiveFire(fireIncidentId == $id, fireSize != FireSize.BLOCK)
+then
+    modify($f) { setFireSize(FireSize.BLOCK) };
+end
+
+rule "Calculate Spread Risk - Low"
+when
+    $f: ActiveFire(fireSize == FireSize.SMALL, windSpeed == WindSpeed.LOW)
+then
+    modify($f) { setSpreadRisk(Risk.LOW) };
+end
+
+rule "Calculate Spread Risk - Moderate"
+when
+    $f: ActiveFire(fireSize == FireSize.MEDIUM || fireSize == FireSize.SMALL, windSpeed == WindSpeed.MODERATE)
+then
+    modify($f) { setSpreadRisk(Risk.MODERATE) };
+end
+
+rule "Calculate Spread Risk - High"
+when
+    $f: ActiveFire(fireSize == FireSize.LARGE || fireSize == FireSize.MEDIUM, windSpeed == WindSpeed.HIGH)
+then
+    modify($f) { setSpreadRisk(Risk.HIGH) };
+end
+
+//rule "Adjust Fire Size - Flame Intensity"
+//when
+//    $f: ActiveFire($id : fireIncidentId, fireSize != FireSize.BLOCK)
+//    Number( $avg: doubleValue) from accumulate(
+//        FirefighterObservation(fireId == $id, $intensity : flameIntensity);
+//        average($intensity)
+//    )
+//    eval($avg > 20)
+//then
+//    modify($f) { setFireSize(FireSize.LARGE) };
+//end
+//
+//rule "Adjust Fire Size - Fire Area"
+//when
+//    $f: ActiveFire($id : fireIncidentId, fireSize != FireSize.BLOCK)
+//    Number( $avg: doubleValue) from accumulate(
+//        FirefighterObservation(fireId == $id, $area : fireArea);
+//        average($area)
+//    )
+//    eval($avg > 20)
+//then
+//    modify($f) { setFireSize(FireSize.LARGE) };
+//end
+//
+//rule "Adjust Fire Size - Smoke Volume"
+//when
+//    $f: ActiveFire($id : fireIncidentId, fireSize != FireSize.BLOCK)
+//    Number( $avg: doubleValue) from accumulate(
+//        FirefighterObservation(fireId == $id, $volume : smokeVolume);
+//        average($volume)
+//    )
+//    eval($avg > 20)
+//then
+//    modify($f) { setFireSize(FireSize.LARGE) };
+//end

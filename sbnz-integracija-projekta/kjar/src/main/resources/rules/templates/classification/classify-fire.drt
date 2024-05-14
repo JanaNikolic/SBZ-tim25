@@ -1,0 +1,25 @@
+template header
+matter
+newClass
+
+package rules;
+
+import com.ftn.sbnz.model.models.enums.FireClass;
+import com.ftn.sbnz.model.models.FireIncident;
+import com.ftn.sbnz.model.models.ActiveFire;
+import com.ftn.sbnz.model.models.enums.BurningMatter;
+
+template "classification-rules"
+
+rule "Categorize Fire - Class @{row.rowNumber}"
+no-loop true
+when
+    $fi: FireIncident(matter == BurningMatter.@{matter}, $id : id)
+    $f: ActiveFire(fireIncidentId == $id, fireClass != FireClass.@{newClass})
+then
+    modify($f) { setFireClass(FireClass.@{newClass}) };
+end
+
+end template
+
+

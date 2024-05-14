@@ -1,0 +1,237 @@
+package rules.forward
+
+import com.ftn.sbnz.model.models.ActiveFire;
+import com.ftn.sbnz.model.models.FireIncident;
+import com.ftn.sbnz.model.models.enums.FireClass;
+import com.ftn.sbnz.model.models.enums.BurningMatter;
+import com.ftn.sbnz.model.models.enums.ExtinguisherType;
+import com.ftn.sbnz.model.models.enums.WarningType;
+import com.ftn.sbnz.model.models.enums.StructureType;
+import com.ftn.sbnz.model.models.enums.FireSize;
+import com.ftn.sbnz.model.models.enums.FireDevelopmentLocation;
+
+
+rule "Decide Extinguisher - Class A Fire"
+no-loop true
+when
+    $fi: FireIncident(
+        matter in (BurningMatter.WOOD, BurningMatter.PAPER, BurningMatter.PLASTICS, BurningMatter.RUBBER, BurningMatter.OTHER_SOLID_MATERIAL),
+        structure in (StructureType.RESIDENTIAL_BUILDING, StructureType.OFFICE_BUILDING)
+    )
+    $f: ActiveFire(
+        fireIncidentId == $fi.getId(),
+        fireClass == FireClass.ClassA,
+        fireSize == FireSize.LARGE,
+        extinguisher == null
+    )
+then
+    modify($f) { setExtinguisher(ExtinguisherType.WATER) };
+end
+
+rule "Decide Extinguisher - Class B Fire"
+no-loop true
+when
+    $fi: FireIncident(
+        matter in (BurningMatter.BUTANOL, BurningMatter.TOLUENE),
+        structure in (StructureType.RESIDENTIAL_BUILDING, StructureType.OFFICE_BUILDING)
+    )
+    $f: ActiveFire(
+        fireIncidentId == $fi.getId(),
+        fireClass == FireClass.ClassB,
+        fireSize == FireSize.LARGE,
+        extinguisher == null
+    )
+then
+    modify($f) { setExtinguisher(ExtinguisherType.WATER) };
+end
+
+rule "Decide Extinguisher - Class C Fire"
+no-loop true
+when
+    $fi: FireIncident(
+        matter in (BurningMatter.BUTANE, BurningMatter.METHANE, BurningMatter.PROPANE, BurningMatter.OTHER_GAS),
+        structure in (StructureType.RESIDENTIAL_BUILDING, StructureType.OFFICE_BUILDING)
+    )
+    $f: ActiveFire(
+        fireIncidentId == $fi.getId(),
+        fireClass == FireClass.ClassC,
+        extinguisher == null
+    )
+then
+    modify($f) { setExtinguisher(ExtinguisherType.WATER), setWarning(WarningType.FIRE_DRIFT_EFFECT) };
+end
+
+rule "Decide Extinguisher - Class B and C Fire with BCE Group Powder 1"
+no-loop true
+when
+    $fi: FireIncident(
+        structure in (StructureType.AIRPORTS, StructureType.REFINERIES, StructureType.INDUSTRIAL_PLANTS, StructureType.WAREHOUSES_OF_PETROLEUM_PRODUCTS)
+    )
+    $f: ActiveFire(
+        fireIncidentId == $fi.getId(),
+        fireClass == FireClass.ClassB || fireClass == FireClass.ClassC,
+        extinguisher == null
+    )
+then
+    modify($f) { setExtinguisher(ExtinguisherType.BCE_POWDER) };
+end
+
+rule "Decide Extinguisher - Class E Fire with BCE Group Powder"
+no-loop true
+when
+    $fi: FireIncident(
+        structure in (StructureType.AIRPORTS, StructureType.REFINERIES, StructureType.INDUSTRIAL_PLANTS, StructureType.WAREHOUSES_OF_PETROLEUM_PRODUCTS),
+        voltage < 10000
+    )
+    $f: ActiveFire(
+        fireIncidentId == $fi.getId(),
+        extinguisher == null
+    )
+then
+    modify($f) { setExtinguisher(ExtinguisherType.BCE_POWDER) };
+end
+
+rule "Decide Extinguisher - Motor Vehicles with ABCE Group Powder"
+no-loop true
+when
+    $fi: FireIncident(
+        structure == StructureType.MOTOR_VEHICLES
+    )
+    $f: ActiveFire(
+        fireIncidentId == $fi.getId(),
+        fireClass == FireClass.ClassB || fireClass == FireClass.ClassC || fireClass == FireClass.ClassA,
+        extinguisher == null
+    )
+then
+    modify($f) { setExtinguisher(ExtinguisherType.ABCE_POWDER) };
+end
+
+rule "Decide Extinguisher - Flammable Liquids and Gases Storage with ABCE Group Powder"
+no-loop true
+when
+    $fi: FireIncident(
+        structure == StructureType.WAREHOUSE_OF_FLAMMABLE_LIQUIDS_AND_GASES
+    )
+    $f: ActiveFire(
+        fireIncidentId == $fi.getId(),
+        fireClass == FireClass.ClassB || fireClass == FireClass.ClassC || fireClass == FireClass.ClassA,
+        extinguisher == null
+    )
+then
+    modify($f) { setExtinguisher(ExtinguisherType.ABCE_POWDER) };
+end
+
+rule "Decide Extinguisher - Industrial Plants with ABCE Group Powder"
+no-loop true
+when
+    $fi: FireIncident(
+        structure == StructureType.INDUSTRIAL_PLANTS
+    )
+    $f: ActiveFire(
+        fireIncidentId == $fi.getId(),
+        fireClass == FireClass.ClassB || fireClass == FireClass.ClassC || fireClass == FireClass.ClassA,
+        extinguisher == null
+    )
+then
+    modify($f) { setExtinguisher(ExtinguisherType.ABCE_POWDER) };
+end
+
+
+rule "Decide Extinguisher - CO2 for Class B Fires"
+no-loop true
+when
+    $f: ActiveFire(
+        fireSize == FireSize.SMALL,
+        fireClass == FireClass.ClassB,
+        extinguisher == null
+    )
+then
+    modify($f) { setExtinguisher(ExtinguisherType.CO2), setTypeOfExtinguisher("Snow") };
+end
+
+rule "Decide Extinguisher Type - CO2 Fog"
+no-loop true
+when
+    $fi: FireIncident(
+        structure in (StructureType.ELECTRICAL_INSTALLATION, StructureType.ELECTRONIC_DEVICE, StructureType.LABORATORY, StructureType.PHARMACY, StructureType.ARCHIVE, StructureType.LIBRARY)
+    )
+    $f: ActiveFire(
+            fireIncidentId == $fi.getId(),
+            extinguisher == null
+        )
+then
+    modify($f) { setExtinguisher(ExtinguisherType.CO2), setTypeOfExtinguisher("Fog") };
+end
+
+rule "Decide Extinguisher Type - CO2 Gas for Flammable Gases"
+no-loop true
+when
+    $fi: FireIncident(
+        matter in (BurningMatter.BUTANE, BurningMatter.METHANE, BurningMatter.PROPANE, BurningMatter.OTHER_GAS)
+    )
+    $f: ActiveFire(
+            fireIncidentId == $fi.getId(),
+            fireClass == FireClass.ClassC,
+            extinguisher == null
+    )
+then
+    modify($f) { setExtinguisher(ExtinguisherType.CO2), setTypeOfExtinguisher("Gas") };
+end
+
+rule "Decide Extinguisher - Light Foam"
+no-loop true
+when
+    $fi: FireIncident(
+        structure in (StructureType.PAINT_AND_VARNISH_FACTORY, StructureType.PAINT_SHOP, StructureType.LIBRARY, StructureType.ARCHIVE, StructureType.MINE, StructureType.POWER_PLANT, StructureType.SHIP)
+    )
+    $f: ActiveFire(
+        fireIncidentId == $fi.getId(),
+        fireClass in (FireClass.ClassA, FireClass.ClassB, FireClass.ClassE),
+        extinguisher == null
+    )
+then
+    modify($f) { setExtinguisher(ExtinguisherType.FOAM), setTypeOfExtinguisher("Light Foam") };
+end
+
+rule "Decide Extinguisher - Medium Foam for Closed Spaces"
+no-loop true
+when
+    $f: ActiveFire(
+        extinguisher == null,
+        fireDevelopmentLocation == FireDevelopmentLocation.CLOSED_SPACE,
+        fireClass in (FireClass.ClassA, FireClass.ClassB, FireClass.ClassE)
+    )
+then
+    modify($f) { setExtinguisher(ExtinguisherType.FOAM), setTypeOfExtinguisher("Medium Foam") };
+end
+
+rule "Decide Extinguisher - Heavy Foam for Ships and Solid Materials"
+no-loop true
+when
+    $fi: FireIncident(
+        structure == StructureType.SHIP
+    )
+    $f: ActiveFire(
+        fireIncidentId == $fi.getId(),
+        fireClass == FireClass.ClassA,
+        extinguisher == null
+    )
+then
+    modify($f) { setExtinguisher(ExtinguisherType.FOAM), setTypeOfExtinguisher("Heavy Foam") };
+end
+
+rule "Decide Extinguisher - Heavy Foam for Class A in Closed Spaces"
+no-loop true
+when
+    $f: ActiveFire(
+        extinguisher == null,
+        fireClass == FireClass.ClassA,
+        fireDevelopmentLocation == FireDevelopmentLocation.CLOSED_SPACE
+    )
+then
+    modify($f) { setExtinguisher(ExtinguisherType.FOAM), setTypeOfExtinguisher("Heavy Foam") };
+end
+
+//query "GetActiveFire"
+//    $activeFire : ActiveFire()
+//end
