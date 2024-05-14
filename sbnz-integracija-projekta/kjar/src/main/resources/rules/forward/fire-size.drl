@@ -5,9 +5,11 @@ import com.ftn.sbnz.model.models.FirefighterObservation;
 import com.ftn.sbnz.model.models.enums.FireSize;
 import com.ftn.sbnz.model.models.enums.Risk;
 import com.ftn.sbnz.model.models.enums.WindSpeed;
+import com.ftn.sbnz.model.models.enums.RoomPlacement;
 import com.ftn.sbnz.model.models.FireIncident;
 
 rule "Classify Fire Size from Fire Points - SMALL to MEDIUM"
+no-loop true
 when
     $f: ActiveFire(fireSize == FireSize.SMALL, numOfFirePoints > 2, numOfFirePoints < 4)
 then
@@ -15,6 +17,7 @@ then
 end
 
 rule "Classify Fire Size from Fire Points - MEDIUM to MEDIUM"
+no-loop true
 when
     $f: ActiveFire(fireSize == FireSize.MEDIUM, numOfFirePoints > 4)
 then
@@ -22,6 +25,7 @@ then
 end
 
 rule "Classify Fire Size - SMALL"
+no-loop true
 when
     $fi: FireIncident(volume <= 1.0, $id : id)
     $f: ActiveFire(fireIncidentId == $id, fireSize != FireSize.SMALL)
@@ -30,6 +34,7 @@ then
 end
 
 rule "Classify Fire Size - MEDIUM"
+no-loop true
 when
     $fi: FireIncident(volume > 1.0 && volume <= 5.0, $id : id)
     $f: ActiveFire(fireIncidentId == $id, fireSize != FireSize.MEDIUM)
@@ -38,6 +43,7 @@ then
 end
 
 rule "Classify Fire Size - LARGE"
+no-loop true
 when
     $fi: FireIncident(volume > 5.0 && volume <= 20.0, $id : id)
     $f: ActiveFire(fireIncidentId == $id, fireSize != FireSize.LARGE)
@@ -46,6 +52,7 @@ then
 end
 
 rule "Classify Fire Size - BLOCK"
+no-loop true
 when
     $fi: FireIncident(volume > 20.0, $id : id)
     $f: ActiveFire(fireIncidentId == $id, fireSize != FireSize.BLOCK)
@@ -54,22 +61,46 @@ then
 end
 
 rule "Calculate Spread Risk - Low"
+no-loop true
 when
-    $f: ActiveFire(fireSize == FireSize.SMALL, windSpeed == WindSpeed.LOW)
+    $f: ActiveFire(
+    fireSize == FireSize.SMALL,
+    windSpeed == WindSpeed.LOW)
 then
     modify($f) { setSpreadRisk(Risk.LOW) };
 end
 
 rule "Calculate Spread Risk - Moderate"
+no-loop true
 when
     $f: ActiveFire(fireSize == FireSize.MEDIUM || fireSize == FireSize.SMALL, windSpeed == WindSpeed.MODERATE)
 then
     modify($f) { setSpreadRisk(Risk.MODERATE) };
 end
 
-rule "Calculate Spread Risk - High"
+rule "Calculate Spread Risk - High for Higher Floors"
+no-loop true
 when
-    $f: ActiveFire(fireSize == FireSize.LARGE || fireSize == FireSize.MEDIUM, windSpeed == WindSpeed.HIGH)
+    $fi: FireIncident($id : id, roomPlacement in (RoomPlacement.FLOOR4_7, RoomPlacement.FLOOR8_15, RoomPlacement.FLOOR16_MORE, RoomPlacement.ROOF))
+    $f: ActiveFire(fireSize == FireSize.MEDIUM || fireSize == FireSize.SMALL, windSpeed == WindSpeed.MODERATE)
+then
+    modify($f) { setSpreadRisk(Risk.HIGH) };
+end
+
+rule "Calculate Spread Risk - Low for Basement"
+no-loop true
+when
+    $fi: FireIncident($id : id, roomPlacement == RoomPlacement.BASEMENT)
+    $f: ActiveFire(fireIncidentId == $id, fireSize == FireSize.MEDIUM || fireSize == FireSize.SMALL, windSpeed == WindSpeed.MODERATE || windSpeed == WindSpeed.HIGH)
+then
+    modify($f) { setSpreadRisk(Risk.LOW) };
+end
+
+rule "Calculate Spread Risk - High"
+no-loop true
+when
+    $fi: FireIncident($id : id, roomPlacement != RoomPlacement.BASEMENT)
+    $f: ActiveFire(fireIncidentId == $id, fireSize == FireSize.LARGE || fireSize == FireSize.MEDIUM, windSpeed == WindSpeed.HIGH)
 then
     modify($f) { setSpreadRisk(Risk.HIGH) };
 end
