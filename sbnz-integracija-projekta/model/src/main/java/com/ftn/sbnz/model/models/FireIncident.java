@@ -17,11 +17,13 @@ public class FireIncident implements Serializable {
     private Double proximityToResidentialArea;
     private RoomPlacement roomPlacement;
     private Double voltage;
+    private boolean peopleInVicinity;
+    private Double proximityOfPeopleToFire;
 
     public FireIncident() {
     }
 
-    public FireIncident(Long id, BurningMatter matter, StructureType structure, FlamesType flames, Double volume, SmokeType smoke, Double windSpeed, WindDirection windDirection, Double proximityToResidentialArea, RoomPlacement roomPlacement, Double voltage) {
+    public FireIncident(Long id, BurningMatter matter, StructureType structure, FlamesType flames, Double volume, SmokeType smoke, Double windSpeed, WindDirection windDirection, Double proximityToResidentialArea, RoomPlacement roomPlacement, Double voltage, boolean peopleInVicinity, Double proximityOfPeopleToFire) {
         this.id = id;
         this.matter = matter;
         this.structure = structure;
@@ -33,6 +35,8 @@ public class FireIncident implements Serializable {
         this.proximityToResidentialArea = proximityToResidentialArea;
         this.roomPlacement = roomPlacement;
         this.voltage = voltage;
+        this.peopleInVicinity = peopleInVicinity;
+        this.proximityOfPeopleToFire = proximityOfPeopleToFire;
     }
 
     public Long getId() {
@@ -123,4 +127,19 @@ public class FireIncident implements Serializable {
         this.voltage = voltage;
     }
 
+    public boolean isPeopleInVicinity() {
+        return peopleInVicinity;
+    }
+
+    public void setPeopleInVicinity(boolean peopleInVicinity) {
+        this.peopleInVicinity = peopleInVicinity;
+    }
+
+    public Double getProximityOfPeopleToFire() {
+        return proximityOfPeopleToFire;
+    }
+
+    public void setProximityOfPeopleToFire(Double proximityOfPeopleToFire) {
+        this.proximityOfPeopleToFire = proximityOfPeopleToFire;
+    }
 }

@@ -2,7 +2,6 @@ package com.ftn.sbnz.service.controllers;
 
 import com.ftn.sbnz.model.models.ActiveFire;
 import com.ftn.sbnz.model.models.FireIncident;
-import com.ftn.sbnz.model.models.FireSteps;
 import com.ftn.sbnz.service.services.FireIncidentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController("/api")
+@RestController()
 public class FireIncidentController {
     private static Logger log = LoggerFactory.getLogger(FireIncidentController.class);
     private final FireIncidentService fireIncidentService;

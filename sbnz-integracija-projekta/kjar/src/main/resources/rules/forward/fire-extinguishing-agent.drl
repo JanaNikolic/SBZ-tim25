@@ -231,3 +231,14 @@ when
 then
     modify($f) { setExtinguisher(ExtinguisherType.FOAM), setTypeOfExtinguisher("Heavy Foam") };
 end
+
+rule "Decide Extinguisher - Class D"
+no-loop true
+when
+    $f: ActiveFire(
+        extinguisher == null,
+        fireClass == FireClass.ClassD
+    )
+then
+    modify($f) { setExtinguisher(ExtinguisherType.DRY_POWDER) };
+end

@@ -3,6 +3,9 @@ package com.ftn.sbnz.model.models;
 import com.ftn.sbnz.model.models.enums.*;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class ActiveFire implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -17,6 +20,9 @@ public class ActiveFire implements Serializable {
     private WarningType warning;
     private String typeOfExtinguisher;
     private FireDevelopmentLocation fireDevelopmentLocation;
+    private boolean shutOffGas;
+    private boolean shutOffElectricity;
+    private Set<String> additionalSteps;
 
     public ActiveFire() {
     }
@@ -24,6 +30,9 @@ public class ActiveFire implements Serializable {
     public ActiveFire(FireIncident fire) {
         this.fireIncidentId = fire.getId();
         this.spreadDirection = fire.getWindDirection();
+        this.shutOffElectricity = false;
+        this.shutOffGas = false;
+        this.additionalSteps = new HashSet<>();
     }
 
     public Long getFireIncidentId() {
@@ -113,6 +122,31 @@ public class ActiveFire implements Serializable {
     public void setFireDevelopmentLocation(FireDevelopmentLocation fireDevelopmentLocation) {
         this.fireDevelopmentLocation = fireDevelopmentLocation;
     }
+
+    public boolean isShutOffGas() {
+        return shutOffGas;
+    }
+
+    public void setShutOffGas(boolean shutOffGas) {
+        this.shutOffGas = shutOffGas;
+    }
+
+    public boolean isShutOffElectricity() {
+        return shutOffElectricity;
+    }
+
+    public void setShutOffElectricity(boolean shutOffElectricity) {
+        this.shutOffElectricity = shutOffElectricity;
+    }
+
+    public Set<String> getAdditionalSteps() {
+        return additionalSteps;
+    }
+
+    public void setAdditionalSteps(AdditionalSteps step) {
+        this.additionalSteps.add(step.name());
+    }
+
     @Override
     public String toString() {
         return "ActiveFire{" +
@@ -127,6 +161,9 @@ public class ActiveFire implements Serializable {
                 ", warning=" + warning +
                 ", typeOfExtinguisher='" + typeOfExtinguisher + '\'' +
                 ", fireDevelopmentLocation=" + fireDevelopmentLocation +
+                ", shutOffGas=" + shutOffGas +
+                ", shutOffElectricity=" + shutOffElectricity +
+                ", additionalSteps=" + additionalSteps +
                 '}';
     }
 }

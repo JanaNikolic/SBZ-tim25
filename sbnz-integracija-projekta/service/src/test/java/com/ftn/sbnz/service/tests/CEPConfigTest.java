@@ -27,7 +27,7 @@ public class CEPConfigTest {
          KieContainer kContainer = ks.getKieClasspathContainer();
          KieSession kieSession = kContainer.newKieSession("foKsession");
 
-        FireIncident fire = new FireIncident(1L, BurningMatter.WOOD, StructureType.RESIDENTIAL_BUILDING, FlamesType.LOW, 3.5, SmokeType.THIN, 10.2, WindDirection.NORTH, 50.0, RoomPlacement.BASEMENT, null);
+        FireIncident fire = new FireIncident(1L, BurningMatter.WOOD, StructureType.RESIDENTIAL_BUILDING, FlamesType.LOW, 3.5, SmokeType.THICK, 10.2, WindDirection.NORTH, 50.0, RoomPlacement.BASEMENT, null, true, 15.0);
         ActiveFire activeFire = activeFireStatus(fire, kContainer);
         FirefighterObservation o1 = new FirefighterObservation(
                 15.3,
@@ -54,10 +54,10 @@ public class CEPConfigTest {
 
         kieSession.insert(fire);
         kieSession.insert(activeFire);
+        kieSession.fireAllRules();
         kieSession.insert(o1);
         kieSession.insert(o2);
         kieSession.insert(o3);
-        kieSession.fireAllRules();
 
         System.out.println(activeFire);
 
