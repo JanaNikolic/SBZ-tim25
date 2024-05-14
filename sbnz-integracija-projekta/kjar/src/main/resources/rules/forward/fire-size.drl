@@ -104,39 +104,3 @@ when
 then
     modify($f) { setSpreadRisk(Risk.HIGH) };
 end
-
-//rule "Adjust Fire Size - Flame Intensity"
-//when
-//    $f: ActiveFire($id : fireIncidentId, fireSize != FireSize.BLOCK)
-//    Number( $avg: doubleValue) from accumulate(
-//        FirefighterObservation(fireId == $id, $intensity : flameIntensity);
-//        average($intensity)
-//    )
-//    eval($avg > 20)
-//then
-//    modify($f) { setFireSize(FireSize.LARGE) };
-//end
-//
-//rule "Adjust Fire Size - Fire Area"
-//when
-//    $f: ActiveFire($id : fireIncidentId, fireSize != FireSize.BLOCK)
-//    Number( $avg: doubleValue) from accumulate(
-//        FirefighterObservation(fireId == $id, $area : fireArea);
-//        average($area)
-//    )
-//    eval($avg > 20)
-//then
-//    modify($f) { setFireSize(FireSize.LARGE) };
-//end
-//
-//rule "Adjust Fire Size - Smoke Volume"
-//when
-//    $f: ActiveFire($id : fireIncidentId, fireSize != FireSize.BLOCK)
-//    Number( $avg: doubleValue) from accumulate(
-//        FirefighterObservation(fireId == $id, $volume : smokeVolume);
-//        average($volume)
-//    )
-//    eval($avg > 20)
-//then
-//    modify($f) { setFireSize(FireSize.LARGE) };
-//end

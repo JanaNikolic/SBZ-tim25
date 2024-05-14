@@ -1,0 +1,74 @@
+package rules.firefighterObservation
+
+import com.ftn.sbnz.model.models.ActiveFire;
+import com.ftn.sbnz.model.models.FirefighterObservation;
+import com.ftn.sbnz.model.models.enums.FireSize;
+import com.ftn.sbnz.model.models.enums.Risk;
+import com.ftn.sbnz.model.models.enums.WindSpeed;
+import com.ftn.sbnz.model.models.enums.RoomPlacement;
+import com.ftn.sbnz.model.models.FireIncident;
+
+rule "Adjust Fire Size - Flame Intensity"
+no-loop true
+when
+    $f: ActiveFire($id : fireIncidentId, fireSize != FireSize.BLOCK)
+    Number( $avg: doubleValue) from accumulate(
+        FirefighterObservation(fireId == $id, $intensity : flameIntensity),
+        average($intensity)
+    )
+    eval($avg > 20)
+then
+    modify($f) { setFireSize(FireSize.LARGE) };
+end
+
+rule "Adjust Fire Size - Fire Area"
+no-loop true
+when
+    $f: ActiveFire($id : fireIncidentId, fireSize != FireSize.BLOCK)
+    Number( $avg: doubleValue) from accumulate(
+        FirefighterObservation(fireId == $id, $area : fireArea),
+        average($area)
+    )
+    eval($avg > 20)
+then
+    modify($f) { setFireSize(FireSize.LARGE) };
+end
+
+rule "Adjust Fire Size - Smoke Volume"
+no-loop true
+when
+    $f: ActiveFire($id : fireIncidentId, fireSize != FireSize.BLOCK)
+    Number( $avg: doubleValue) from accumulate(
+        FirefighterObservation(fireId == $id, $volume : smokeVolume),
+        average($volume)
+    )
+    eval($avg > 20)
+then
+    modify($f) { setFireSize(FireSize.LARGE) };
+end
+
+
+rule "Sum of fire points from Firefighter Observations"
+no-loop true
+when
+    $af: ActiveFire($id : fireIncidentId)
+    Number( $firesPoints: intValue) from accumulate(
+        FirefighterObservation(fireId == $id, $points : numOfFirePoints),
+        sum($points)
+    )
+then
+    modify($af) { setNumOfFirePoints($firesPoints) };
+end
+
+rule "Fire size from Firefighter Observations"
+no-loop true
+when
+    $af: ActiveFire($id : fireIncidentId)
+    Number( $firesPoints: intValue) from accumulate(
+        FirefighterObservation(fireId == $id, $points : numOfFirePoints),
+        sum($points)
+    )
+then
+    modify($af) { setNumOfFirePoints($firesPoints) };
+end
+

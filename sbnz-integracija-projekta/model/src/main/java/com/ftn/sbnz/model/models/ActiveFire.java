@@ -113,4 +113,20 @@ public class ActiveFire implements Serializable {
     public void setFireDevelopmentLocation(FireDevelopmentLocation fireDevelopmentLocation) {
         this.fireDevelopmentLocation = fireDevelopmentLocation;
     }
+    @Override
+    public String toString() {
+        return "ActiveFire{" +
+                "fireIncidentId=" + fireIncidentId +
+                ", fireClass=" + fireClass +
+                ", windSpeed=" + windSpeed +
+                ", spreadRisk=" + spreadRisk +
+                ", spreadDirection=" + spreadDirection +
+                ", fireSize=" + fireSize +
+                ", extinguisher=" + extinguisher +
+                ", numOfFirePoints=" + numOfFirePoints +
+                ", warning=" + warning +
+                ", typeOfExtinguisher='" + typeOfExtinguisher + '\'' +
+                ", fireDevelopmentLocation=" + fireDevelopmentLocation +
+                '}';
+    }
 }

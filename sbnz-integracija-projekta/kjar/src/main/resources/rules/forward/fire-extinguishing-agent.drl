@@ -231,7 +231,3 @@ when
 then
     modify($f) { setExtinguisher(ExtinguisherType.FOAM), setTypeOfExtinguisher("Heavy Foam") };
 end
-
-//query "GetActiveFire"
-//    $activeFire : ActiveFire()
-//end

@@ -30,24 +30,6 @@ public class FireIncidentService {
         this.kieContainer = kieContainer;
     }
 
-//    public ActiveFire createFireIncident1(FireIncident fire) {
-//        ActiveFire activeFire = new ActiveFire(fire);
-//        KieSession kieSession = kieContainer.newKieSession("bwKsession");
-//        kieSession.insert(fire);
-//        kieSession.insert(activeFire);
-//        kieSession.fireAllRules();
-//
-//        // Retrieve modified ActiveFire object from the session
-//        QueryResults results = kieSession.getQueryResults("GetActiveFire");
-//        for (QueryResultsRow row : results) {
-//            activeFire = (ActiveFire) row.get("$activeFire");
-//            break; // Assuming there's only one result
-//        }
-//
-//        kieSession.dispose();
-//        return activeFire;
-//    }
-
     public ActiveFire createFireIncident(FireIncident fire) {
         ActiveFire activeFire = new ActiveFire(fire);
 
@@ -56,7 +38,7 @@ public class FireIncidentService {
 
         ExternalSpreadsheetCompiler converter = new ExternalSpreadsheetCompiler();
         String drl = converter.compile(dataStream, templateStream, 3, 2);
-//        System.out.println(drl);
+
         KieSession kieSession = createKieSessionFromDRL(drl);
 
         kieSession.insert(fire);
@@ -69,12 +51,6 @@ public class FireIncidentService {
         kieSession2.insert(fire);
         kieSession2.insert(activeFire);
         kieSession2.fireAllRules();
-
-//        QueryResults results2 = kieSession2.getQueryResults("GetActiveFire");
-//        for (QueryResultsRow row : results2) {
-//            activeFire = (ActiveFire) row.get("$activeFire");
-//            break;
-//        }
 
         kieSession2.dispose();
 

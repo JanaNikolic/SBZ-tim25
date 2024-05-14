@@ -21,6 +21,20 @@ public class FireIncident implements Serializable {
     public FireIncident() {
     }
 
+    public FireIncident(Long id, BurningMatter matter, StructureType structure, FlamesType flames, Double volume, SmokeType smoke, Double windSpeed, WindDirection windDirection, Double proximityToResidentialArea, RoomPlacement roomPlacement, Double voltage) {
+        this.id = id;
+        this.matter = matter;
+        this.structure = structure;
+        this.flames = flames;
+        this.volume = volume;
+        this.smoke = smoke;
+        this.windSpeed = windSpeed;
+        this.windDirection = windDirection;
+        this.proximityToResidentialArea = proximityToResidentialArea;
+        this.roomPlacement = roomPlacement;
+        this.voltage = voltage;
+    }
+
     public Long getId() {
         return id;
     }
