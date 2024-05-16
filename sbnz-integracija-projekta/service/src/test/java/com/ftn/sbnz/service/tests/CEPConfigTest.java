@@ -1,10 +1,16 @@
 package com.ftn.sbnz.service.tests;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
+
+import com.ftn.sbnz.model.events.FirefighterActivityEvent;
 import com.ftn.sbnz.model.models.ActiveFire;
 import com.ftn.sbnz.model.models.FireIncident;
 import com.ftn.sbnz.model.models.FirefighterObservation;
 import com.ftn.sbnz.model.models.enums.*;
 import com.ftn.sbnz.service.services.FireIncidentService;
+import org.drools.core.ClassObjectFilter;
+import org.drools.core.time.SessionPseudoClock;
 import org.drools.decisiontable.ExternalSpreadsheetCompiler;
 import org.junit.Test;
 import org.kie.api.KieServices;
@@ -16,11 +22,38 @@ import org.kie.api.runtime.KieSession;
 import org.kie.internal.utils.KieHelper;
 
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
 public class CEPConfigTest {
 
+    @Test
+    public void cepTest() {
+        KieServices ks = KieServices.Factory.get();
+        KieContainer kContainer = ks.getKieClasspathContainer();
+        KieSession kieSession = kContainer.newKieSession("cepKsession");
+        FireIncident fire = new FireIncident(1L, BurningMatter.WOOD, StructureType.RESIDENTIAL_BUILDING, FlamesType.LOW, 3.5, SmokeType.THICK, 10.2, WindDirection.NORTH, 50.0, RoomPlacement.BASEMENT, null, true, 15.0);
+        kieSession.insert(fire);
+        SessionPseudoClock clock = kieSession.getSessionClock();
+        for (int index = 0; index < 100; index++) {
+            FirefighterActivityEvent beep = new FirefighterActivityEvent(1L, 1L, FirefighterActivityEvent.Status.MOVING);
+            kieSession.insert(beep);
+            clock.advanceTime(4, TimeUnit.SECONDS);
+            int ruleCount = kieSession.fireAllRules();
+
+            assertThat(ruleCount, equalTo(0));
+        }
+
+        clock.advanceTime(10, TimeUnit.MINUTES);
+        int ruleCount = kieSession
+                .fireAllRules();
+        assertThat(ruleCount, equalTo(1));
+        Collection<?> newEvents = kieSession.getObjects(new ClassObjectFilter(FirefighterActivityEvent.class));
+        assertThat(newEvents.size(), equalTo(1));
+        System.out.println(newEvents);
+    }
     @Test
     public void test() {
          KieServices ks = KieServices.Factory.get();
@@ -54,6 +87,8 @@ public class CEPConfigTest {
 
         kieSession.insert(fire);
         kieSession.insert(activeFire);
+        kieSession.fireAllRules();
+        System.out.println(activeFire);
         kieSession.insert(o1);
         kieSession.insert(o2);
         kieSession.insert(o3);

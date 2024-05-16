@@ -1,0 +1,136 @@
+package cep
+
+import com.ftn.sbnz.model.events.FirefighterActivityEvent;
+import com.ftn.sbnz.model.events.FirefighterInactivityEvent;
+import com.ftn.sbnz.model.models.FireIncident;
+import com.ftn.sbnz.model.models.Firefighter;
+import com.ftn.sbnz.model.events.FirefighterHealthChangeEvent;
+import com.ftn.sbnz.model.events.FirefighterTaskChangeEvent;
+import com.ftn.sbnz.model.models.enums.FirefighterTask;
+
+rule "Detect Lack of Movement" //TODO
+when
+    $fireIncident: FireIncident($id: id)
+    $firefighterActivity: FirefighterActivityEvent( $fid: firefighterId )
+    Number(intValue == 0) from accumulate(
+        $fa: FirefighterActivityEvent(
+        firefighterId == $fid,
+        status == Status.MOVING,
+        fireId == $id
+    ) over window:time(10s),
+        count($fa)
+    )
+then
+    insert(new FirefighterInactivityEvent($fid, $id));
+    drools.halt();
+end
+
+rule "Detect Oxygen Level Change"
+when
+    $event: FirefighterHealthChangeEvent($oxygenLevel : oxygenLevel, $firefighter: firefighter)
+    Firefighter(this == $firefighter, oxygenLevel < 80, oxygenLevel >= 50)
+    Number() from accumulate
+        (
+        $changeEvent: FirefighterHealthChangeEvent(
+            this != $event,
+            firefighter == $firefighter,
+            $oxygenLevel == oxygenLevel,
+            this after[0s, 1m] $event
+        ),
+        $count : count($changeEvent)
+    )
+    eval($count > 0)
+then
+    // warn or take action
+end
+
+rule "Detect Oxygen Level Change - Evacuate"
+when
+    $event: FirefighterHealthChangeEvent($oxygenLevel : oxygenLevel, $firefighter: firefighter)
+    Firefighter(this == $firefighter, oxygenLevel < 50, oxygenLevel >= 20)
+    Number(intValue > 0) from accumulate
+        (
+        $changeEvent: FirefighterHealthChangeEvent(
+            this != $event,
+            firefighter == $firefighter,
+            $oxygenLevel == oxygenLevel,
+            this after[0s, 1m] $event
+        ),
+        count($changeEvent)
+    )
+then
+    // Order to evacuate
+end
+
+rule "Detect Oxygen Level Change - Needs Rescue"
+when
+    $event: FirefighterHealthChangeEvent($oxygenLevel : oxygenLevel, $firefighter: firefighter)
+    Firefighter(this == $firefighter, oxygenLevel < 20)
+    Number() from accumulate
+    (
+        $changeEvent: FirefighterHealthChangeEvent(
+            this != $event,
+            firefighter == $firefighter,
+            $oxygenLevel == oxygenLevel,
+            this after[0s, 1m] $event
+        ),
+        $count : count($changeEvent)
+    )
+    eval($count > 0)
+then
+    // Send resque and provide medical assistance
+end
+
+rule "Adjust Firefighter Tasks based on Heart Rate"
+when
+    $event: FirefighterHealthChangeEvent($heartRate : heartRate, $firefighter: firefighter)
+    $firefighter: Firefighter(heartRate < 60 && heartRate >= 50 || heartRate > 160 && heartRate <= 180)
+    Number(intValue > 0) from accumulate
+    (
+        $changeEvent: FirefighterHealthChangeEvent(
+            this != $event,
+            firefighter == $firefighter,
+            $heartRate = heartRate,
+            this after[0s, 1m] $event
+        )
+        count($changeEvent)
+    )
+then
+    // WARN adjust firefighter tasks or provide medical assistance
+end
+
+rule "Adjust Firefighter Tasks based on Heart Rate"
+when
+    $event: FirefighterHealthChangeEvent($heartRate : heartRate, $firefighter: firefighter)
+    $firefighter: Firefighter(heartRate < 50 && heartRate <= 40 || heartRate > 180 && heartRate <= 200)
+    Number(intValue > 0) from accumulate
+    (
+        $changeEvent: FirefighterHealthChangeEvent(
+            this != $event,
+            firefighter == $firefighter,
+            $heartRate = heartRate,
+            this after[0s, 1m] $event
+        )
+        count($changeEvent)
+    )
+then
+    // ORDER EVACUATE adjust firefighter tasks or provide medical assistance
+end
+
+rule "Adjust Firefighter Tasks based on Heart Rate"
+when
+    $event: FirefighterHealthChangeEvent($heartRate : heartRate, $firefighter: firefighter)
+    $firefighter: Firefighter(heartRate < 40 || heartRate > 200)
+    Number(intValue > 0) from accumulate
+    (
+        $changeEvent: FirefighterHealthChangeEvent(
+            this != $event,
+            firefighter == $firefighter,
+            $heartRate = heartRate,
+            this after[0s, 1m] $event
+        )
+        count($changeEvent)
+    )
+then
+    // SEND EVACUATION TEAM adjust firefighter tasks or provide medical assistance
+end

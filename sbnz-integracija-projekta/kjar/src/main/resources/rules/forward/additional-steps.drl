@@ -115,7 +115,6 @@ then
 end
 
 rule "Evacuation and AdditionalUnits - Rule 8"
-no-loop true
 when
     $fi: FireIncident(peopleInVicinity == true, proximityOfPeopleToFire > 0, $id : id)
     $f: ActiveFire( fireIncidentId == $id, fireSize == FireSize.BLOCK)
@@ -167,7 +166,6 @@ then
 end
 
 rule "Ventilation - Rule 2"
-no-loop true
 when
     $fi: FireIncident($id : id, smoke == SmokeType.THICK)
     $f: ActiveFire($id == fireIncidentId)
