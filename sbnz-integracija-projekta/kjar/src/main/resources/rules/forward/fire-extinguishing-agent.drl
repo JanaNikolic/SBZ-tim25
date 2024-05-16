@@ -15,7 +15,7 @@ rule "Decide Extinguisher - Class A Fire"
 no-loop true
 when
     $fi: FireIncident(
-        matter in (BurningMatter.WOOD, BurningMatter.PAPER, BurningMatter.PLASTICS, BurningMatter.RUBBER, BurningMatter.OTHER_SOLID_MATERIAL),
+        matter in (BurningMatter.WOOD, BurningMatter.PAPER, BurningMatter.PLASTICS, BurningMatter.OTHER_SOLID_MATERIAL),
         structure in (StructureType.RESIDENTIAL_BUILDING, StructureType.OFFICE_BUILDING)
     )
     $f: ActiveFire(
@@ -26,6 +26,21 @@ when
     )
 then
     modify($f) { setExtinguisher(ExtinguisherType.WATER) };
+end
+
+rule "Decide Extinguisher - Burning Rubber"
+no-loop true
+when
+    $fi: FireIncident(
+        matter == BurningMatter.RUBBER
+    )
+    $f: ActiveFire(
+        fireIncidentId == $fi.getId(),
+        fireClass == FireClass.ClassA,
+        extinguisher == null
+    )
+then
+    modify($f) { setExtinguisher(ExtinguisherType.FOAM) };
 end
 
 rule "Decide Extinguisher - Class B Fire"

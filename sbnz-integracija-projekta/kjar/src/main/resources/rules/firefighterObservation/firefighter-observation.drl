@@ -47,6 +47,41 @@ then
     modify($f) { setFireSize(FireSize.LARGE) };
 end
 
+rule "Adjust Fire Size - Flame Intensity 2"
+no-loop true
+when
+    $f: ActiveFire($id : fireIncidentId, fireSize == FireSize.SMALL)
+    Number( doubleValue > 10, doubleValue <= 20) from accumulate(
+        FirefighterObservation(fireId == $id, $intensity : flameIntensity),
+        average($intensity)
+    )
+then
+    modify($f) { setFireSize(FireSize.MEDIUM) };
+end
+
+rule "Adjust Fire Size - Fire Area 2"
+no-loop true
+when
+    $f: ActiveFire($id : fireIncidentId, fireSize == FireSize.SMALL)
+    Number(doubleValue > 10, doubleValue <= 20) from accumulate(
+        FirefighterObservation(fireId == $id, $area : fireArea),
+        average($area)
+    )
+then
+    modify($f) { setFireSize(FireSize.MEDIUM) };
+end
+
+rule "Adjust Fire Size - Smoke Volume 2"
+no-loop true
+when
+    $f: ActiveFire($id : fireIncidentId, fireSize == FireSize.SMALL)
+    Number( doubleValue > 10, doubleValue <= 20) from accumulate(
+        FirefighterObservation(fireId == $id, $volume : smokeVolume),
+        average($volume)
+    )
+then
+    modify($f) { setFireSize(FireSize.MEDIUM) };
+end
 
 rule "Sum of fire points from Firefighter Observations"
 no-loop true

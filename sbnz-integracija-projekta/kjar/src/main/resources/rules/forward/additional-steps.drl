@@ -63,7 +63,6 @@ when
     $fi: FireIncident(peopleInVicinity == true, proximityOfPeopleToFire > 0, proximityOfPeopleToFire < 10, $id : id)
     $f: ActiveFire( fireIncidentId == $id, fireSize == FireSize.SMALL, spreadRisk == Risk.LOW)
 then
-    System.out.println("Evacuation - Rule 1");
     modify($f) { setAdditionalSteps(AdditionalSteps.EVACUATION_LOW) };
 end
 
@@ -72,7 +71,6 @@ when
     $fi: FireIncident(peopleInVicinity == true, proximityOfPeopleToFire > 15, proximityOfPeopleToFire < 20, $id : id)
     $f: ActiveFire( fireIncidentId == $id, fireSize == FireSize.MEDIUM, spreadRisk == Risk.LOW)
 then
-    System.out.println("Evacuation - Rule 2");
     modify($f) { setAdditionalSteps(AdditionalSteps.EVACUATION_LOW) };
 end
 
@@ -81,7 +79,6 @@ when
     $fi: FireIncident($id : id, peopleInVicinity == true, proximityOfPeopleToFire > 0.0 && proximityOfPeopleToFire <= 15.0)
     $f: ActiveFire( fireIncidentId == $id, fireSize == FireSize.MEDIUM, spreadRisk == Risk.LOW)
 then
-    System.out.println("Evacuation - Rule 3");
     modify($f) { setAdditionalSteps(AdditionalSteps.EVACUATION_MEDIUM) };
 end
 
@@ -90,7 +87,6 @@ when
     $fi: FireIncident(peopleInVicinity == true, proximityOfPeopleToFire >= 15, proximityOfPeopleToFire < 20, $id : id)
     $f: ActiveFire( fireIncidentId == $id, fireSize == FireSize.MEDIUM, spreadRisk == Risk.MODERATE)
 then
-    System.out.println("Evacuation - Rule 4");
     modify($f) { setAdditionalSteps(AdditionalSteps.EVACUATION_MEDIUM) };
 end
 
@@ -99,7 +95,6 @@ when
     $fi: FireIncident(peopleInVicinity == true, proximityOfPeopleToFire > 0, proximityOfPeopleToFire < 10, $id : id)
     $f: ActiveFire( fireIncidentId == $id, fireSize == FireSize.MEDIUM, spreadRisk == Risk.MODERATE)
 then
-    System.out.println("Evacuation - Rule 5");
     modify($f) { setAdditionalSteps(AdditionalSteps.EVACUATION_HIGH) };
 end
 
@@ -108,7 +103,6 @@ when
     $fi: FireIncident(peopleInVicinity == true, proximityOfPeopleToFire > 0, proximityOfPeopleToFire < 50, $id : id)
     $f: ActiveFire( fireIncidentId == $id, fireSize == FireSize.MEDIUM, spreadRisk == Risk.HIGH)
 then
-    System.out.println("Evacuation - Rule 6");
     modify($f) { setAdditionalSteps(AdditionalSteps.EVACUATION_HIGH) };
 end
 
@@ -117,7 +111,6 @@ when
     $fi: FireIncident(peopleInVicinity == true, proximityOfPeopleToFire > 0, $id : id)
     $f: ActiveFire( fireIncidentId == $id, fireSize == FireSize.LARGE)
 then
-    System.out.println("Evacuation - Rule 7");
     modify($f) { setAdditionalSteps(AdditionalSteps.EVACUATION_HIGH) };
 end
 
@@ -127,12 +120,10 @@ when
     $fi: FireIncident(peopleInVicinity == true, proximityOfPeopleToFire > 0, $id : id)
     $f: ActiveFire( fireIncidentId == $id, fireSize == FireSize.BLOCK)
 then
-    System.out.println("Evacuation and AdditionalUnits - Rule 8");
     modify($f) { setAdditionalSteps(AdditionalSteps.EVACUATION_HIGH), setAdditionalSteps(AdditionalSteps.ADDITIONAL_UNITS) };
 end
 
 rule "AdditionalUnits - Rule 1"
-no-loop true
 when
     $f: ActiveFire(fireSize == FireSize.LARGE, spreadRisk == Risk.HIGH)
 then
@@ -140,7 +131,6 @@ then
 end
 
 rule "AdditionalUnits - Rule 2"
-no-loop true
 when
     $f: ActiveFire(fireSize == FireSize.BLOCK, spreadRisk == Risk.HIGH)
 then
@@ -148,7 +138,6 @@ then
 end
 
 rule "AdditionalUnits - Rule 3"
-no-loop true
 when
     $f: ActiveFire(fireSize == FireSize.LARGE, spreadRisk == Risk.MODERATE)
 then
@@ -156,15 +145,20 @@ then
 end
 
 rule "AdditionalUnits - Rule 4"
-no-loop true
 when
     $f: ActiveFire(fireSize == FireSize.BLOCK, spreadRisk == Risk.MODERATE)
 then
     modify($f) { setAdditionalSteps(AdditionalSteps.ADDITIONAL_UNITS) };
 end
 
+rule "AdditionalUnits - Rule 5"
+when
+    $f: ActiveFire(fireSize == FireSize.MEDIUM, spreadRisk == Risk.HIGH || spreadRisk == Risk.MODERATE, numOfFirePoints > 5)
+then
+    modify($f) { setAdditionalSteps(AdditionalSteps.ADDITIONAL_UNITS) };
+end
+
 rule "Ventilation - Rule 1"
-no-loop true
 when
     $fi: FireIncident($id : id, smoke == SmokeType.MODERATE)
     $f: ActiveFire($id == fireIncidentId)
