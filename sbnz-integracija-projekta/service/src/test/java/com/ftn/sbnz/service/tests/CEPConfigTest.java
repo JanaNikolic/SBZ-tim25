@@ -54,11 +54,10 @@ public class CEPConfigTest {
 
         kieSession.insert(fire);
         kieSession.insert(activeFire);
-        kieSession.fireAllRules();
         kieSession.insert(o1);
         kieSession.insert(o2);
         kieSession.insert(o3);
-
+        kieSession.fireAllRules();
         System.out.println(activeFire);
 
         kieSession.dispose();

@@ -52,23 +52,11 @@ rule "Sum of fire points from Firefighter Observations"
 no-loop true
 when
     $af: ActiveFire($id : fireIncidentId)
-    Number( $firesPoints: intValue) from accumulate(
+    Number( $firePoints: intValue) from accumulate(
         FirefighterObservation(fireId == $id, $points : numOfFirePoints),
         sum($points)
     )
 then
-    modify($af) { setNumOfFirePoints($firesPoints) };
-end
-
-rule "Fire size from Firefighter Observations"
-no-loop true
-when
-    $af: ActiveFire($id : fireIncidentId)
-    Number( $firesPoints: intValue) from accumulate(
-        FirefighterObservation(fireId == $id, $points : numOfFirePoints),
-        sum($points)
-    )
-then
-    modify($af) { setNumOfFirePoints($firesPoints) };
+    modify($af) { setNumOfFirePoints($firePoints) };
 end
 
