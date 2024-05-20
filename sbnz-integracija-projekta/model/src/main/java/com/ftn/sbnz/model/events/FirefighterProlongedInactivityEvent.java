@@ -1,32 +1,27 @@
 package com.ftn.sbnz.model.events;
 
-import com.ftn.sbnz.model.models.enums.Status;
-import org.kie.api.definition.type.Expires;
 import org.kie.api.definition.type.Role;
 import org.kie.api.definition.type.Timestamp;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Objects;
 
 @Role(Role.Type.EVENT)
-//@Timestamp("timestamp")
-@Expires("10m")
-public class FirefighterActivityEvent implements Serializable {
-
+@Timestamp("timestamp")
+public class FirefighterProlongedInactivityEvent implements Serializable {
     private static final long serialVersionUID = 1L;
+    private Date timestamp;
     private Long firefighterId;
     private Long fireId;
-    private Date timestamp;
-    private Status status;
 
-    public FirefighterActivityEvent() {
+    public FirefighterProlongedInactivityEvent() {
     }
 
-    public FirefighterActivityEvent(Long firefighterId, Long fireId, Status status) {
+    public FirefighterProlongedInactivityEvent(Long firefighterId, Long fireId) {
         this.firefighterId = firefighterId;
         this.fireId = fireId;
         this.timestamp = new Date();
-        this.status = status;
     }
 
     public Long getFirefighterId() {
@@ -53,21 +48,16 @@ public class FirefighterActivityEvent implements Serializable {
         this.timestamp = timestamp;
     }
 
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
-    // Override toString() for debugging and logging
     @Override
-    public String toString() {
-        return "FirefighterActivityEvent{" +
-                "firefighterId='" + firefighterId + '\'' +
-                ", timestamp=" + timestamp +
-                ", status=" + status +
-                '}';
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FirefighterProlongedInactivityEvent that = (FirefighterProlongedInactivityEvent) o;
+        return timestamp.equals(that.timestamp) && firefighterId.equals(that.firefighterId) && fireId.equals(that.fireId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(timestamp, firefighterId, fireId);
     }
 }

@@ -4,9 +4,10 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.ftn.sbnz.model.events.FirefighterActivityEvent;
-import com.ftn.sbnz.model.models.ActiveFire;
-import com.ftn.sbnz.model.models.FireIncident;
-import com.ftn.sbnz.model.models.FirefighterObservation;
+import com.ftn.sbnz.model.events.FirefighterHealthChangeEvent;
+import com.ftn.sbnz.model.events.FirefighterInactivityEvent;
+import com.ftn.sbnz.model.events.FirefighterProlongedInactivityEvent;
+import com.ftn.sbnz.model.models.*;
 import com.ftn.sbnz.model.models.enums.*;
 import com.ftn.sbnz.service.services.FireIncidentService;
 import org.drools.core.ClassObjectFilter;
@@ -19,6 +20,9 @@ import org.kie.api.builder.Results;
 import org.kie.api.io.ResourceType;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
+import org.kie.api.runtime.KieSessionConfiguration;
+import org.kie.api.runtime.conf.ClockTypeOption;
+import org.kie.api.runtime.rule.EntryPoint;
 import org.kie.internal.utils.KieHelper;
 
 import java.io.InputStream;
@@ -28,32 +32,162 @@ import java.util.concurrent.TimeUnit;
 
 
 public class CEPConfigTest {
-
     @Test
-    public void cepTest() {
+    public void testDetectOxygenLevelChange() {
         KieServices ks = KieServices.Factory.get();
         KieContainer kContainer = ks.getKieClasspathContainer();
         KieSession kieSession = kContainer.newKieSession("cepKsession");
+
+        FireIncident fire = new FireIncident(1L, BurningMatter.WOOD, StructureType.RESIDENTIAL_BUILDING, FlamesType.LOW, 3.5, SmokeType.THICK, 10.2, WindDirection.NORTH, 50.0, RoomPlacement.BASEMENT, null, true, 15.0);
+        Firefighter firefighter = new Firefighter(1L, "John Doe", 29, 100.0, 100, 1L);
+        FirefighterHealthChangeEvent initialEvent = new FirefighterHealthChangeEvent(1L, 80, 80);
+        kieSession.insert(fire);
+        kieSession.insert(firefighter);
+        kieSession.insert(initialEvent);
+
+        int ruleCount = kieSession.fireAllRules();
+        assertThat(ruleCount, equalTo(0));
+        System.out.println(firefighter);
+
+        FirefighterHealthChangeEvent decreasedOxygenEvent = new FirefighterHealthChangeEvent(1L, 60, 40);
+        kieSession.insert(decreasedOxygenEvent);
+
+        SessionPseudoClock clock = kieSession.getSessionClock();
+        clock.advanceTime(2, TimeUnit.MINUTES);
+
+        ruleCount = kieSession.fireAllRules();
+//        assertThat(ruleCount, equalTo(1));
+        Collection<?> newEvents = kieSession.getObjects(new ClassObjectFilter(Action.class));
+        Action action = (Action) newEvents.iterator().next();
+        System.out.println(action);
+        System.out.println(firefighter);
+    }
+
+    @Test
+    public void testRescueInactiveFirefighters() {
+        KieServices ks = KieServices.Factory.get();
+        KieContainer kContainer = ks.getKieClasspathContainer();
+        KieSession kieSession = kContainer.newKieSession("cepKsession");
+
+        SessionPseudoClock clock = kieSession.getSessionClock();
+
         FireIncident fire = new FireIncident(1L, BurningMatter.WOOD, StructureType.RESIDENTIAL_BUILDING, FlamesType.LOW, 3.5, SmokeType.THICK, 10.2, WindDirection.NORTH, 50.0, RoomPlacement.BASEMENT, null, true, 15.0);
         kieSession.insert(fire);
-        SessionPseudoClock clock = kieSession.getSessionClock();
-        for (int index = 0; index < 100; index++) {
-            FirefighterActivityEvent beep = new FirefighterActivityEvent(1L, 1L, FirefighterActivityEvent.Status.MOVING);
-            kieSession.insert(beep);
-            clock.advanceTime(4, TimeUnit.SECONDS);
-            int ruleCount = kieSession.fireAllRules();
 
+        FirefighterProlongedInactivityEvent inactivityEvent1 = new FirefighterProlongedInactivityEvent(1L, 1L);
+        kieSession.insert(inactivityEvent1);
+
+        int ruleCount = kieSession.fireAllRules();
+        assertThat(ruleCount, equalTo(0));
+
+        clock.advanceTime(45, TimeUnit.SECONDS);
+        FirefighterProlongedInactivityEvent inactivityEvent2 = new FirefighterProlongedInactivityEvent(1L, 1L);
+        kieSession.insert(inactivityEvent2);
+
+        ruleCount = kieSession.fireAllRules();
+        assertThat(ruleCount, equalTo(0));
+
+        clock.advanceTime(60, TimeUnit.SECONDS);
+        FirefighterProlongedInactivityEvent inactivityEvent3 = new FirefighterProlongedInactivityEvent(1L, 1L);
+        kieSession.insert(inactivityEvent3);
+
+        ruleCount = kieSession.fireAllRules();
+        assertThat(ruleCount, equalTo(1));
+
+        Collection<?> newEvents = kieSession.getObjects(new ClassObjectFilter(Action.class));
+        assertThat(newEvents.size(), equalTo(1));
+        Action action = (Action) newEvents.iterator().next();
+        assertThat(action.getAction(), equalTo(WarningType.RESCUE_INACTIVE_FIREFIGHTER));
+
+        System.out.println(action);
+
+        kieSession.dispose();
+    }
+
+    @Test
+    public void testDetectLackOfMovementAndProlongedInactivity() {
+        KieServices ks = KieServices.Factory.get();
+        KieContainer kContainer = ks.getKieClasspathContainer();
+        KieSession kieSession = kContainer.newKieSession("cepKsession");
+
+        SessionPseudoClock clock = kieSession.getSessionClock();
+
+        FireIncident fire = new FireIncident(1L, BurningMatter.WOOD, StructureType.RESIDENTIAL_BUILDING, FlamesType.LOW, 3.5, SmokeType.THICK, 10.2, WindDirection.NORTH, 50.0, RoomPlacement.BASEMENT, null, true, 15.0);
+        Firefighter firefighter = new Firefighter(1L, "John Doe", 29, 100.0, 100, 1L);
+        kieSession.insert(fire);
+        kieSession.insert(firefighter);
+
+        for (int index = 0; index < 6; index++) {
+            FirefighterActivityEvent movingEvent = new FirefighterActivityEvent(1L, 1L, Status.MOVING);
+            kieSession.insert(movingEvent);
+            clock.advanceTime(2, TimeUnit.SECONDS);
+            int ruleCount = kieSession.fireAllRules();
             assertThat(ruleCount, equalTo(0));
         }
 
-        clock.advanceTime(10, TimeUnit.MINUTES);
-        int ruleCount = kieSession
-                .fireAllRules();
-        assertThat(ruleCount, equalTo(1));
-        Collection<?> newEvents = kieSession.getObjects(new ClassObjectFilter(FirefighterActivityEvent.class));
-        assertThat(newEvents.size(), equalTo(1));
-        System.out.println(newEvents);
+        clock.advanceTime(11, TimeUnit.SECONDS);
+        int ruleCount = kieSession.fireAllRules();
+        assertThat(ruleCount, equalTo(7)); // Lack of movement should be detected
+
+        Collection<?> inactivityEvents = kieSession.getObjects(new ClassObjectFilter(FirefighterInactivityEvent.class));
+        assertThat(inactivityEvents.size(), equalTo(6));
+
+        Collection<?> prolongedInactivityEvents = kieSession.getObjects(new ClassObjectFilter(FirefighterProlongedInactivityEvent.class));
+        assertThat(prolongedInactivityEvents.size(), equalTo(1));
+
+        kieSession.dispose();
     }
+
+
+
+    @Test
+    public void cepTest1() {
+        KieServices ks = KieServices.Factory.get();
+        KieContainer kContainer = ks.getKieClasspathContainer();
+
+        KieSessionConfiguration config = KieServices.Factory.get().newKieSessionConfiguration();
+        config.setOption(ClockTypeOption.get("pseudo"));
+
+        KieSession kieSession = kContainer.newKieSession("cepKsession", config);
+        SessionPseudoClock clock = kieSession.getSessionClock();
+
+        FireIncident fire = new FireIncident(1L, BurningMatter.WOOD, StructureType.RESIDENTIAL_BUILDING, FlamesType.LOW, 3.5, SmokeType.THICK, 10.2, WindDirection.NORTH, 50.0, RoomPlacement.BASEMENT, null, true, 15.0);
+        kieSession.insert(fire);
+
+        for (int index = 0; index < 10; index++) {
+            FirefighterActivityEvent beep = new FirefighterActivityEvent(1L, 1L, Status.MOVING);
+//            kieSession.getEntryPoint("firefighter-activity-stream").insert(beep);
+            kieSession.insert(beep);
+            clock.advanceTime(4, TimeUnit.SECONDS);
+            int ruleCount = kieSession.fireAllRules();
+            assertThat(ruleCount, equalTo(0));
+            System.out.println("Inserted FirefighterActivityEvent " + (index + 1));
+            System.out.println(beep);
+        }
+
+        // Print the session state before advancing the clock
+        Collection<?> allEventsBefore = kieSession.getObjects();
+        System.out.println("Session state before advancing time: " + allEventsBefore.size());
+
+        // Advance time to trigger the inactivity detection
+        System.out.println("Advancing time by 10 seconds...");
+        clock.advanceTime(20, TimeUnit.MINUTES);
+        int ruleCount = kieSession.fireAllRules();
+        System.out.println("Rule count after advancing time: " + ruleCount);
+        assertThat(ruleCount, equalTo(1));  // Check if the rule fires once inactivity is detected
+
+        Collection<?> newEvents = kieSession.getObjects(new ClassObjectFilter(FirefighterInactivityEvent.class));
+        System.out.println("FirefighterInactivityEvent count: " + newEvents.size());
+        assertThat(newEvents.size(), equalTo(1));  // Ensure exactly one inactivity event is created
+        System.out.println(newEvents);
+
+        kieSession.dispose();
+    }
+
+
+
+
+
     @Test
     public void test() {
          KieServices ks = KieServices.Factory.get();

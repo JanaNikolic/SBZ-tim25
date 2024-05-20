@@ -5,11 +5,12 @@ import org.kie.api.definition.type.Role;
 import org.kie.api.definition.type.Timestamp;
 
 import java.util.Date;
+import java.util.Objects;
 
 @Role(Role.Type.EVENT)
-@Timestamp("timestamp")
+//@Timestamp("timestamp")
 public class FirefighterHealthChangeEvent {
-    private Firefighter firefighter;
+    private Long firefighterId;
     private double oxygenLevel;
     private int heartRate;
     private Date timestamp;
@@ -17,19 +18,19 @@ public class FirefighterHealthChangeEvent {
     public FirefighterHealthChangeEvent() {
     }
 
-    public FirefighterHealthChangeEvent(Firefighter firefighter, double oxygenLevel, int heartRate) {
-        this.firefighter = firefighter;
+    public FirefighterHealthChangeEvent(Long firefighterId, double oxygenLevel, int heartRate) {
+        this.firefighterId = firefighterId;
         this.oxygenLevel = oxygenLevel;
         this.heartRate = heartRate;
         this.timestamp = new Date();
     }
 
-    public Firefighter getFirefighter() {
-        return firefighter;
+    public Long getFirefighterId() {
+        return firefighterId;
     }
 
-    public void setFirefighter(Firefighter firefighter) {
-        this.firefighter = firefighter;
+    public void setFirefighterId(Long firefighterId) {
+        this.firefighterId = firefighterId;
     }
 
     public double getOxygenLevel() {
@@ -54,6 +55,19 @@ public class FirefighterHealthChangeEvent {
 
     public void setTimestamp(Date timestamp) {
         this.timestamp = timestamp;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FirefighterHealthChangeEvent that = (FirefighterHealthChangeEvent) o;
+        return Double.compare(that.oxygenLevel, oxygenLevel) == 0 && heartRate == that.heartRate && Objects.equals(firefighterId, that.firefighterId) && Objects.equals(timestamp, that.timestamp);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(firefighterId, oxygenLevel, heartRate, timestamp);
     }
 }
 
