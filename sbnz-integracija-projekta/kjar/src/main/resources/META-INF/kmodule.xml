@@ -11,4 +11,7 @@
     <kbase name="observationBase" packages="firefighterObservation">
         <ksession name="foKsession"/>
     </kbase>
+    <kbase name="backwardBase" packages="backward">
+        <ksession name="backwardKsession"/>
+    </kbase>
 </kmodule>

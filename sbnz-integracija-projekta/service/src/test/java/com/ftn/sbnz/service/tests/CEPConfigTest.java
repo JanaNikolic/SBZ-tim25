@@ -23,11 +23,11 @@ import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.KieSessionConfiguration;
 import org.kie.api.runtime.conf.ClockTypeOption;
 import org.kie.api.runtime.rule.EntryPoint;
+import org.kie.api.runtime.rule.QueryResults;
 import org.kie.internal.utils.KieHelper;
 
 import java.io.InputStream;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -276,4 +276,132 @@ public class CEPConfigTest {
 
         return kieHelper.build().newKieSession();
     }
+
+    @Test
+    public void testIncidentReportValidation() {
+        KieServices ks = KieServices.Factory.get();
+        KieContainer kContainer = ks.getKieClasspathContainer();
+        KieSession kieSession = kContainer.newKieSession("backwardKsession");
+
+        kieSession.insert(new ValidStep("Shutting Off Gas/Electricity", "Evacuation"));
+        kieSession.insert(new ValidStep("Shutting Off Gas/Electricity", "Ventilation"));
+
+        kieSession.insert(new ValidStep("Evacuation", "Ventilation"));
+        kieSession.insert(new ValidStep("Evacuation", "Fire Localization"));
+
+        kieSession.insert(new ValidStep("Ventilation", "Fire Localization"));
+        kieSession.insert(new ValidStep("Ventilation", "Evacuation"));
+
+        kieSession.insert(new ValidStep("Fire Localization", "Evacuation"));
+        kieSession.insert(new ValidStep("Fire Localization", "Ventilation"));
+        kieSession.insert(new ValidStep("Fire Localization", "Extinguishing Fire"));
+
+        Step step1 = new Step("Shutting Off Gas/Electricity", 1);
+        Step step2 = new Step("Evacuation", 2);
+        Step step3 = new Step("Ventilation", 3);
+        Step step4 = new Step("Fire Localization", 4);
+        Step step5 = new Step("Extinguishing Fire", 5);
+
+        IncidentReport report = new IncidentReport(Arrays.asList(step1, step2, step3, step4, step5), 1);
+
+        kieSession.insert(report);
+        kieSession.insert(step1);
+        kieSession.insert(step2);
+        kieSession.insert(step3);
+        kieSession.insert(step4);
+        kieSession.insert(step5);
+
+        int ruleCount = kieSession.fireAllRules();
+        System.out.println("Fired " + ruleCount + " rules.");
+
+        kieSession.dispose();
+    }
+
+//    @Test
+//    public void testIncidentReportValidation2() {
+//        KieServices ks = KieServices.Factory.get();
+//        KieContainer kContainer = ks.getKieClasspathContainer();
+//        KieSession kieSession = kContainer.newKieSession("backwardKsession");
+//
+//        // Define the hierarchical relationships
+//        List<ValidStep> validSteps = new ArrayList<>();
+//        validSteps.add(new ValidStep("Gas/electricity shutdown", "Evacuation"));
+//        validSteps.add(new ValidStep("Evacuation", "Ventilation"));
+//        validSteps.add(new ValidStep("Evacuation", "Location of fire"));
+//        validSteps.add(new ValidStep("Evacuation", "Fire extinguishing"));
+//        validSteps.add(new ValidStep("Ventilation", "Evacuation"));
+//        validSteps.add(new ValidStep("Ventilation", "Location of fire"));
+//        validSteps.add(new ValidStep("Ventilation", "Fire extinguishing"));
+//        validSteps.add(new ValidStep("Location of fire", "Evacuation"));
+//        validSteps.add(new ValidStep("Location of fire", "Ventilation"));
+//        validSteps.add(new ValidStep("Location of fire", "Fire extinguishing"));
+//        validSteps.add(new ValidStep("Fire extinguishing", "")); // End step
+//
+//        for (ValidStep vs : validSteps) {
+//            kieSession.insert(vs);
+//        }
+//
+//        // Sample valid sequence
+//        Step step1 = new Step("Gas/electricity shutdown", new Date());
+//        Step step2 = new Step("Evacuation", new Date(System.currentTimeMillis() + 1000));
+//        Step step3 = new Step("Ventilation", new Date(System.currentTimeMillis() + 2000));
+//        Step step4 = new Step("Location of fire", new Date(System.currentTimeMillis() + 3000));
+//        Step step5 = new Step("Fire extinguishing", new Date(System.currentTimeMillis() + 4000));
+//
+//        IncidentReport report = new IncidentReport(Arrays.asList(step1, step2, step3, step4, step5));
+//
+//        kieSession.insert(report);
+//
+//        int ruleCount = kieSession.fireAllRules();
+//        System.out.println("Fired " + ruleCount + " rules.");
+//
+//        kieSession.dispose();
+//    }
+
+    @Test
+    public void test2() {
+        KieServices ks = KieServices.Factory.get();
+        KieContainer kContainer = ks.getKieClasspathContainer();
+        KieSession kSession = kContainer.newKieSession("backwardKsession");
+
+        List<Step> steps = new ArrayList<>();
+        steps.add(new Step("GasElectricityShutdown", 1));
+        steps.add(new Step("Evacuation", 2));
+        steps.add(new Step("Ventilation", 3));
+        steps.add(new Step("FireLocation", 4));
+        steps.add(new Step("FireExtinguishing", 5));
+
+        IncidentReport report = new IncidentReport(steps, 1);
+
+        List<ValidStep> validSteps = new ArrayList<>();
+        validSteps.add(new ValidStep("GasElectricityShutdown", "Evacuation"));
+        validSteps.add(new ValidStep("Evacuation", "Ventilation"));
+        validSteps.add(new ValidStep("Ventilation", "FireLocation"));
+        validSteps.add(new ValidStep("FireLocation", "FireExtinguishing"));
+
+        List<Step> invalidSteps = new ArrayList<>();
+
+        kSession.setGlobal("invalidSteps", invalidSteps);
+
+        for (ValidStep vs : validSteps) {
+            kSession.insert(vs);
+        }
+
+        kSession.insert(report);
+
+        kSession.fireAllRules();
+
+        kSession.dispose();
+
+        if (invalidSteps.isEmpty()) {
+            System.out.println("All steps are in valid order.");
+        } else {
+            System.out.println("Invalid steps found:");
+            for (Step step : invalidSteps) {
+                System.out.println(step.getName() + " at order " + step.getOrder());
+            }
+        }
+    }
+
+
 }
