@@ -6,12 +6,14 @@ import com.ftn.sbnz.service.services.FireIncidentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController()
+@RequestMapping("api")
 public class FireIncidentController {
     private static Logger log = LoggerFactory.getLogger(FireIncidentController.class);
     private final FireIncidentService fireIncidentService;
@@ -22,6 +24,7 @@ public class FireIncidentController {
     }
 
     @RequestMapping(value = "/fire", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+    @PreAuthorize("hasRole('USER')")
     public ActiveFire postFireIncident(@RequestBody FireIncident fire) {
         return fireIncidentService.createFireIncident(fire);
     }

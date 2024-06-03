@@ -9,12 +9,15 @@ public class Step {
     private String name;
     @Position(1)
     private int order;
+    @Position(2)
+    private int fireId;
 
     public Step() {}
 
-    public Step(String name, int order) {
+    public Step(String name, int order, int fireId) {
         this.name = name;
         this.order = order;
+        this.fireId = fireId;
     }
 
     public String getName() {
@@ -33,11 +36,20 @@ public class Step {
         this.order = order;
     }
 
+    public int getFireId() {
+        return fireId;
+    }
+
+    public void setFireId(int fireId) {
+        this.fireId = fireId;
+    }
+
     @Override
     public String toString() {
         return "Step{" +
                 "name='" + name + '\'' +
                 ", order=" + order +
+                ", fireId=" + fireId +
                 '}';
     }
 
@@ -46,11 +58,11 @@ public class Step {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Step step = (Step) o;
-        return order == step.order && name.equals(step.name);
+        return order == step.order && fireId == step.fireId && name.equals(step.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, order);
+        return Objects.hash(name, order, fireId);
     }
 }
