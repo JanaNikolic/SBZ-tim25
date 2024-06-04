@@ -16,14 +16,14 @@ import java.util.Objects;
 @Entity
 public class User implements UserDetails {
     public enum UserRole {
-        ADMIN, USER
+        FIREFIGHTER, CAPTAIN, CHIEF
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
-    @Column(name = "email", nullable = false)
+    @Column(name = "email", nullable = false, unique = true)
     @NotNull
     @NotEmpty
     @NotBlank
@@ -105,7 +105,7 @@ public class User implements UserDetails {
     public User() {
     }
 
-    public User(Integer id, String email, String name, String surname, String password, UserRole role, boolean isEnabled, boolean forChange) {
+    public User(Long id, String email, String name, String surname, String password, UserRole role, boolean isEnabled, boolean forChange) {
         this.id = id;
         this.email = email;
         this.name = name;
@@ -116,11 +116,11 @@ public class User implements UserDetails {
         this.forChange = forChange;
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

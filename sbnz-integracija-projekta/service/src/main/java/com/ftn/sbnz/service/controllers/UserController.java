@@ -1,15 +1,15 @@
 package com.ftn.sbnz.service.controllers;
 
+import com.ftn.sbnz.model.models.FireCompany;
 import com.ftn.sbnz.model.models.users.User;
-import com.ftn.sbnz.service.dto.CredentialsDTO;
-import com.ftn.sbnz.service.dto.TokenDTO;
-import com.ftn.sbnz.service.dto.UserDTO;
+import com.ftn.sbnz.service.dto.*;
 import com.ftn.sbnz.service.security.jwtUtils.TokenUtils;
 import com.ftn.sbnz.service.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -50,9 +50,24 @@ public class UserController {
         return new ResponseEntity<TokenDTO>(new TokenDTO(jwt, ""), HttpStatus.OK);
     }
 
-    @PostMapping(value="/register", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> register(@RequestBody UserDTO dto) {
-        UserDTO ret = userService.insert(dto);
+    @PostMapping(value="/register-firefighter", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasAnyRole('CAPTAIN', 'CHIEF')")
+    public ResponseEntity<?> registerFirefighter(@RequestBody UserDTO dto) {
+        UserDTO ret = userService.insert(dto, User.UserRole.FIREFIGHTER);
         return new ResponseEntity<UserDTO>(ret, HttpStatus.OK);
+    }
+
+    @PostMapping(value="/register-captain", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('CHIEF')")
+    public ResponseEntity<?> registerCaptain(@RequestBody UserDTO dto) {
+        UserDTO ret = userService.insert(dto, User.UserRole.CAPTAIN);
+        return new ResponseEntity<UserDTO>(ret, HttpStatus.OK);
+    }
+
+    @PostMapping(value="/register-company", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('CHIEF')")
+    public ResponseEntity<?> insertFireCompany(@RequestBody FireCompanyDTO dto) {
+        FireCompanyResponseDTO ret = userService.insertFireCompany(dto);
+        return new ResponseEntity<>(ret, HttpStatus.OK);
     }
 }

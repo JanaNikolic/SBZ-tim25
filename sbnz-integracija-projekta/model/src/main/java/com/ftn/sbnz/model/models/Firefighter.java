@@ -6,8 +6,6 @@ import java.util.Objects;
 public class Firefighter implements Serializable {
     private static final long serialVersionUID = 1L;
     private Long id;
-    private String name;
-    private int age;
     private double oxygenLevel;
     private int heartRate;
     private Long fireId;
@@ -15,10 +13,8 @@ public class Firefighter implements Serializable {
     public Firefighter() {
     }
 
-    public Firefighter(Long id, String name, int age, double oxygenLevel, int heartRate, Long fireId) {
+    public Firefighter(Long id, double oxygenLevel, int heartRate, Long fireId) {
         this.id = id;
-        this.name = name;
-        this.age = age;
         this.oxygenLevel = oxygenLevel;
         this.heartRate = heartRate;
         this.fireId = fireId;
@@ -30,22 +26,6 @@ public class Firefighter implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public int getAge() {
-        return age;
-    }
-
-    public void setAge(int age) {
-        this.age = age;
     }
 
     public double getOxygenLevel() {

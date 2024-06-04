@@ -24,7 +24,7 @@ public class FireIncidentController {
     }
 
     @RequestMapping(value = "/fire", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('CAPTAIN')")
     public ActiveFire postFireIncident(@RequestBody FireIncident fire) {
         return fireIncidentService.createFireIncident(fire);
     }

@@ -39,7 +39,7 @@ public class CEPConfigTest {
         KieSession kieSession = kContainer.newKieSession("cepKsession");
 
         FireIncident fire = new FireIncident(1L, BurningMatter.WOOD, StructureType.RESIDENTIAL_BUILDING, FlamesType.LOW, 3.5, SmokeType.THICK, 10.2, WindDirection.NORTH, 50.0, RoomPlacement.BASEMENT, null, true, 15.0);
-        Firefighter firefighter = new Firefighter(1L, "John Doe", 29, 100.0, 100, 1L);
+        Firefighter firefighter = new Firefighter(1L, 100.0, 100, 1L);
         FirefighterHealthChangeEvent initialEvent = new FirefighterHealthChangeEvent(1L, 80, 80);
         kieSession.insert(fire);
         kieSession.insert(firefighter);
@@ -113,7 +113,7 @@ public class CEPConfigTest {
         SessionPseudoClock clock = kieSession.getSessionClock();
 
         FireIncident fire = new FireIncident(1L, BurningMatter.WOOD, StructureType.RESIDENTIAL_BUILDING, FlamesType.LOW, 3.5, SmokeType.THICK, 10.2, WindDirection.NORTH, 50.0, RoomPlacement.BASEMENT, null, true, 15.0);
-        Firefighter firefighter = new Firefighter(1L, "John Doe", 29, 100.0, 100, 1L);
+        Firefighter firefighter = new Firefighter(1L, 100.0, 100, 1L);
         kieSession.insert(fire);
         kieSession.insert(firefighter);
 
