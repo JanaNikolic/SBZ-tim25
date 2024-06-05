@@ -95,3 +95,12 @@ then
     modify($af) { setNumOfFirePoints($firePoints) };
 end
 
+rule "Remove finished fire incident"
+when
+    $af: ActiveFire($id : fireIncidentId)
+    $fi: FireIncident($fId : id, finished == true, $id == id)
+then
+    delete($af);
+    delete($fi);
+end
+

@@ -1,83 +1,47 @@
-package com.ftn.sbnz.model.models;
+package com.ftn.sbnz.service.dto;
 
+import com.ftn.sbnz.model.models.FireIncident;
 import com.ftn.sbnz.model.models.enums.*;
 
-import javax.persistence.*;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import java.io.Serializable;
-
-@Entity
-public class FireIncident implements Serializable {
-    private static final long serialVersionUID = 1L;
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class FireIncidentDTO {
     private Long id;
-    @Column(nullable = false)
     private BurningMatter matter;
-    @Column(nullable = false)
     private StructureType structure;
-    @Column(nullable = false)
     private FlamesType flames;
-    @NotNull
-    @Column(nullable = false)
     private Double volume;
-    @Column(nullable = false)
     private SmokeType smoke;
-    @NotNull
-    @Column(nullable = false)
     private Double windSpeed;
-    @Column(nullable = false)
     private WindDirection windDirection;
-    @Column(nullable = false)
-    @Min(value = 0)
-    @Max(value = 500)
     private Double proximityToResidentialArea;
-    @Column(nullable = false)
     private RoomPlacement roomPlacement;
-    @Min(value = 0)
-    @Max(value = 100000)
-    @Column()
     private Double voltage;
-    @Column(nullable = false)
-    @NotNull
     private boolean peopleInVicinity;
-    @Min(value = 0)
-    @Max(value = 500)
-    @NotNull
-    @Column(nullable = false)
     private Double proximityOfPeopleToFire;
-
-    @OneToOne
-    @JoinColumn(name = "firecompany_id", nullable = false)
-    private FireCompany fireCompany;
-
-    @Column
+    private FireCompanyDataDTO fireCompany;
     private boolean finished;
 
-    public FireIncident() {
+    public FireIncidentDTO(FireIncident fireIncident) {
+        this.id = fireIncident.getId();
+        this.matter = fireIncident.getMatter();
+        this.structure = fireIncident.getStructure();
+        this.flames = fireIncident.getFlames();
+        this.volume = fireIncident.getVolume();
+        this.smoke = fireIncident.getSmoke();
+        this.windSpeed = fireIncident.getWindSpeed();
+        this.windDirection = fireIncident.getWindDirection();
+        this.proximityToResidentialArea = fireIncident.getProximityToResidentialArea();
+        this.roomPlacement = fireIncident.getRoomPlacement();
+        this.voltage = fireIncident.getVoltage();
+        this.peopleInVicinity = fireIncident.isPeopleInVicinity();
+        this.proximityOfPeopleToFire = fireIncident.getProximityOfPeopleToFire();
+        this.fireCompany = new FireCompanyDataDTO(fireIncident.getFireCompany());
+        this.finished = fireIncident.isFinished();
     }
 
-    public FireIncident(Long id, BurningMatter matter, StructureType structure, FlamesType flames, Double volume, SmokeType smoke, Double windSpeed, WindDirection windDirection, Double proximityToResidentialArea, RoomPlacement roomPlacement, Double voltage, boolean peopleInVicinity, Double proximityOfPeopleToFire) {
-        this.id = id;
-        this.matter = matter;
-        this.structure = structure;
-        this.flames = flames;
-        this.volume = volume;
-        this.smoke = smoke;
-        this.windSpeed = windSpeed;
-        this.windDirection = windDirection;
-        this.proximityToResidentialArea = proximityToResidentialArea;
-        this.roomPlacement = roomPlacement;
-        this.voltage = voltage;
-        this.peopleInVicinity = peopleInVicinity;
-        this.proximityOfPeopleToFire = proximityOfPeopleToFire;
-        this.finished = false;
+    public FireIncidentDTO() {
     }
 
-    public FireIncident(Long id, BurningMatter matter, StructureType structure, FlamesType flames, Double volume, SmokeType smoke, Double windSpeed, WindDirection windDirection, Double proximityToResidentialArea, RoomPlacement roomPlacement, Double voltage, boolean peopleInVicinity, Double proximityOfPeopleToFire, FireCompany fireCompany, boolean finished) {
+    public FireIncidentDTO(Long id, BurningMatter matter, StructureType structure, FlamesType flames, Double volume, SmokeType smoke, Double windSpeed, WindDirection windDirection, Double proximityToResidentialArea, RoomPlacement roomPlacement, Double voltage, boolean peopleInVicinity, Double proximityOfPeopleToFire, FireCompanyDataDTO fireCompany, boolean finished) {
         this.id = id;
         this.matter = matter;
         this.structure = structure;
@@ -199,11 +163,11 @@ public class FireIncident implements Serializable {
         this.proximityOfPeopleToFire = proximityOfPeopleToFire;
     }
 
-    public FireCompany getFireCompany() {
+    public FireCompanyDataDTO getFireCompany() {
         return fireCompany;
     }
 
-    public void setFireCompany(FireCompany fireCompany) {
+    public void setFireCompany(FireCompanyDataDTO fireCompany) {
         this.fireCompany = fireCompany;
     }
 

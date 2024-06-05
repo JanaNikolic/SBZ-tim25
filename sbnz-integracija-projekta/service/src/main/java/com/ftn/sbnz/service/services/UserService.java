@@ -62,7 +62,7 @@ public class UserService implements UserDetailsService {
         User captain = getByEmail(dto.getCaptain());
         if (captain.getRole() != User.UserRole.CAPTAIN) throw new CustomException("User must be captain!");
 
-        FireCompany existingFireCompany = fireCompanyRepository.findByCaptain(captain);
+        FireCompany existingFireCompany = fireCompanyRepository.findByCaptain(captain).orElse(null);
         if (existingFireCompany != null) {
             throw new CustomException("There is already a Fire Company with this captain!");
         }
@@ -72,8 +72,8 @@ public class UserService implements UserDetailsService {
             User firefighter = getByEmail(f);
             if (firefighter.getRole() != User.UserRole.FIREFIGHTER) throw new CustomException("User must be firefighter!");
 
-            Set<FireCompany> fireCompanies = fireCompanyRepository.findByFirefightersContains(firefighter);
-            if (!fireCompanies.isEmpty()) {
+            FireCompany fireCompany = fireCompanyRepository.findByFirefightersContains(firefighter).orElse(null);
+            if (fireCompany != null) {
                 throw new CustomException("Firefighter " + firefighter.getName() + " " + firefighter.getSurname() + " is already assigned to another fire company!");
             }
             firefighters.add(firefighter);
@@ -84,5 +84,13 @@ public class UserService implements UserDetailsService {
         return new FireCompanyResponseDTO(fireCompany);
     }
 
+    public FireCompany getFireCompanyByCaptain(User captain){
+        return fireCompanyRepository.findByCaptain(captain).orElseThrow(() -> new CustomException("Fire Company not found fot this captain!"));
+    }
 
+
+    public FireCompany getFireCompany(User user) {
+        if (user.getRole() == User.UserRole.CAPTAIN) return getFireCompanyByCaptain(user);
+        return fireCompanyRepository.findByFirefightersContains(user).orElseThrow(() -> new CustomException("Fire Company not found fot this firefighter!"));
+    }
 }

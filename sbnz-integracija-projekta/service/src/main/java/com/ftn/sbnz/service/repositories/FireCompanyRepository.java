@@ -11,6 +11,6 @@ import java.util.Set;
 
 @Repository
 public interface FireCompanyRepository extends JpaRepository<FireCompany, Integer> {
-    FireCompany findByCaptain(User captain);
-    Set<FireCompany> findByFirefightersContains(User firefighter);
+    Optional<FireCompany> findByCaptain(User captain);
+    Optional<FireCompany> findByFirefightersContains(User firefighter);
 }
