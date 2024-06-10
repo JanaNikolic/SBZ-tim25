@@ -9,14 +9,15 @@ const LoginForm = () => {
   const onSubmit = async (data) => {
     try {
       const response = await login(data);
-      console.log('Login successful:', response);
+      localStorage.setItem('accessToken', response.accessToken);
+      console.log('Login successful:', response.accessToken);
     } catch (error) {
       console.error('Login error:', error.message);
     }
   };
 
   return (
-    <Container maxWidth="xs" textAlign="center" sx={{ mt: 20 }}>
+    <Container maxWidth="xs" sx={{ mt: 20 }}>
       <Box sx={{ mt: 8 }}>
         <Typography variant="h4" component="h1" gutterBottom textAlign="center">
           Login

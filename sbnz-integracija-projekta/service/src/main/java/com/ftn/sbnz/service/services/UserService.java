@@ -17,9 +17,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -93,5 +92,25 @@ public class UserService implements UserDetailsService {
     public FireCompany getFireCompany(User user) {
         if (user.getRole() == User.UserRole.CAPTAIN) return getFireCompanyByCaptain(user);
         return fireCompanyRepository.findByFirefightersContains(user).orElseThrow(() -> new CustomException("Fire Company not found fot this firefighter!"));
+    }
+
+    public List<UserDataDTO> getCaptainsWithoutFireCompany() {
+        List<User> captains = userRepository.findAllByRole(User.UserRole.CAPTAIN);
+        List<UserDataDTO> captainsWithoutCompany = new ArrayList<>();
+        for (User captain : captains) {
+            FireCompany company = fireCompanyRepository.findByCaptain(captain).orElse(null);
+            if (company == null) captainsWithoutCompany.add(new UserDataDTO(captain));
+        }
+        return captainsWithoutCompany;
+    }
+
+    public List<UserDataDTO> getFirefightersWithoutFireCompany() {
+        List<User> firefighters = userRepository.findAllByRole(User.UserRole.FIREFIGHTER);
+        List<UserDataDTO> firefightersWithoutCompany = new ArrayList<>();
+        for (User firefighter : firefighters) {
+            FireCompany company = fireCompanyRepository.findByFirefightersContains(firefighter).orElse(null);
+            if (company == null) firefightersWithoutCompany.add(new UserDataDTO(firefighter));
+        }
+        return firefightersWithoutCompany;
     }
 }

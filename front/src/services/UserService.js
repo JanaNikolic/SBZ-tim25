@@ -13,7 +13,13 @@ export const login = async (credentials) => {
 
 export const registerFirefighter = async (user) => {
   try {
-    const response = await axios.post(`${API_URL}/register-firefighter`, user);
+    const accessToken = localStorage.getItem("accessToken");
+    const response = await axios.post(`${API_URL}/register-firefighter`, user,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || "Registration failed");
@@ -22,9 +28,21 @@ export const registerFirefighter = async (user) => {
 
 export const registerCaptain = async (user) => {
   try {
-    const response = await axios.post(`${API_URL}/register-captain`, user);
+    const accessToken = localStorage.getItem("accessToken");
+    const response = await axios.post(`${API_URL}/register-captain`, user,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || "Registration failed");
   }
+};
+
+export const logout = () => {
+    localStorage.removeItem('accessToken');
+    // Optionally, you can redirect the user to the login page after logout
+    // history.push('/login');
 };

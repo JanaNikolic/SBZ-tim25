@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import LoginForm from './components/login/LoginForm';
 import RegisterForm from './components/register/RegisterForm';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import CreateFireCompanyForm from './components/fire-company/CreateFireCompanyForm';
 
 const theme = createTheme({
   palette: {
@@ -29,6 +30,7 @@ const App = () => {
       <Routes>
         <Route path="/login" element={<LoginForm />} />
         <Route path="/register" element={<RegisterForm />} />
+        <Route path="/fire-company" element={<CreateFireCompanyForm />} />
         <Route path="/" element={<h1>Home Page</h1>} />
       </Routes>
     </Router>

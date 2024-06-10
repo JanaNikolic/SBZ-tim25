@@ -16,10 +16,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("api/user")
@@ -71,4 +70,20 @@ public class UserController {
         FireCompanyResponseDTO ret = userService.insertFireCompany(dto);
         return new ResponseEntity<>(ret, HttpStatus.OK);
     }
+
+    @GetMapping(value = "/captain-without-fire-company", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('CHIEF')")
+    public ResponseEntity<List<UserDataDTO>> getCaptainsWithoutFireCompany() {
+        List<UserDataDTO> captainsWithoutFireCompany = userService.getCaptainsWithoutFireCompany();
+        return ResponseEntity.ok(captainsWithoutFireCompany);
+    }
+
+    @GetMapping(value = "/firefighter-without-fire-company", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('CHIEF')")
+    public ResponseEntity<List<UserDataDTO>> getFirefightersWithoutFireCompany() {
+        List<UserDataDTO> firefightersWithoutFireCompany = userService.getFirefightersWithoutFireCompany();
+        return ResponseEntity.ok(firefightersWithoutFireCompany);
+    }
+
+
 }
