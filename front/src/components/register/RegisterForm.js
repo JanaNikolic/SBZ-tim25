@@ -55,7 +55,7 @@ const RegisterForm = () => {
     <Container maxWidth="xs" sx={{ mt: 10 }}>
       <Box sx={{ mt: 8 }}>
         <Typography variant="h4" component="h1" gutterBottom textAlign="center">
-          Register
+          Register Employe
         </Typography>
         <form onSubmit={handleSubmit(onSubmit)}>
           <FormControl component="fieldset" sx={{ mb: 2 }}>

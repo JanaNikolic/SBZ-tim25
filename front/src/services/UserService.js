@@ -40,9 +40,3 @@ export const registerCaptain = async (user) => {
     throw new Error(error.response?.data?.message || "Registration failed");
   }
 };
-
-export const logout = () => {
-    localStorage.removeItem('accessToken');
-    // Optionally, you can redirect the user to the login page after logout
-    // history.push('/login');
-};
