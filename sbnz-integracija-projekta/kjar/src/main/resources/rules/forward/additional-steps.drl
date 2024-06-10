@@ -10,6 +10,14 @@ import com.ftn.sbnz.model.models.enums.ExtinguisherType;
 import com.ftn.sbnz.model.models.enums.AdditionalSteps;
 import com.ftn.sbnz.model.models.enums.SmokeType;
 
+query "getActiveFireByIncidentId"(int fireId)
+    $activeFire : ActiveFire($fireId;)
+end
+
+query "getActiveFire"
+    $activeFire : ActiveFire()
+end
+
 rule "Call Gas Company - Rule 1"
 when
     $f: ActiveFire((fireClass == FireClass.ClassC))
@@ -59,6 +67,8 @@ then
 end
 
 rule "Evacuation - Rule 1"
+no-loop true
+agenda-group "update-fire"
 when
     $fi: FireIncident(peopleInVicinity == true, proximityOfPeopleToFire > 0, proximityOfPeopleToFire < 10, $id : id)
     $f: ActiveFire( fireIncidentId == $id, fireSize == FireSize.SMALL, spreadRisk == Risk.LOW)
@@ -67,6 +77,8 @@ then
 end
 
 rule "Evacuation - Rule 2"
+no-loop true
+agenda-group "update-fire"
 when
     $fi: FireIncident(peopleInVicinity == true, proximityOfPeopleToFire > 15, proximityOfPeopleToFire < 20, $id : id)
     $f: ActiveFire( fireIncidentId == $id, fireSize == FireSize.MEDIUM, spreadRisk == Risk.LOW)
@@ -75,6 +87,8 @@ then
 end
 
 rule "Evacuation - Rule 3"
+no-loop true
+agenda-group "update-fire"
 when
     $fi: FireIncident($id : id, peopleInVicinity == true, proximityOfPeopleToFire > 0.0 && proximityOfPeopleToFire <= 15.0)
     $f: ActiveFire( fireIncidentId == $id, fireSize == FireSize.MEDIUM, spreadRisk == Risk.LOW)
@@ -83,6 +97,8 @@ then
 end
 
 rule "Evacuation - Rule 4"
+no-loop true
+agenda-group "update-fire"
 when
     $fi: FireIncident(peopleInVicinity == true, proximityOfPeopleToFire >= 15, proximityOfPeopleToFire < 20, $id : id)
     $f: ActiveFire( fireIncidentId == $id, fireSize == FireSize.MEDIUM, spreadRisk == Risk.MODERATE)
@@ -91,22 +107,30 @@ then
 end
 
 rule "Evacuation - Rule 5"
+no-loop true
+agenda-group "update-fire"
 when
     $fi: FireIncident(peopleInVicinity == true, proximityOfPeopleToFire > 0, proximityOfPeopleToFire < 10, $id : id)
     $f: ActiveFire( fireIncidentId == $id, fireSize == FireSize.MEDIUM, spreadRisk == Risk.MODERATE)
 then
+    System.out.println("Evacuation - Rule 5");
     modify($f) { setAdditionalSteps(AdditionalSteps.EVACUATION_HIGH) };
 end
 
 rule "Evacuation - Rule 6"
+no-loop true
+agenda-group "update-fire"
 when
     $fi: FireIncident(peopleInVicinity == true, proximityOfPeopleToFire > 0, proximityOfPeopleToFire < 50, $id : id)
     $f: ActiveFire( fireIncidentId == $id, fireSize == FireSize.MEDIUM, spreadRisk == Risk.HIGH)
 then
+    System.out.println("Evacuation - Rule 6");
     modify($f) { setAdditionalSteps(AdditionalSteps.EVACUATION_HIGH) };
 end
 
 rule "Evacuation - Rule 7"
+no-loop true
+agenda-group "update-fire"
 when
     $fi: FireIncident(peopleInVicinity == true, proximityOfPeopleToFire > 0, $id : id)
     $f: ActiveFire( fireIncidentId == $id, fireSize == FireSize.LARGE)
@@ -115,6 +139,8 @@ then
 end
 
 rule "Evacuation and AdditionalUnits - Rule 8"
+no-loop true
+agenda-group "update-fire"
 when
     $fi: FireIncident(peopleInVicinity == true, proximityOfPeopleToFire > 0, $id : id)
     $f: ActiveFire( fireIncidentId == $id, fireSize == FireSize.BLOCK)
@@ -123,6 +149,8 @@ then
 end
 
 rule "AdditionalUnits - Rule 1"
+no-loop true
+agenda-group "update-fire"
 when
     $f: ActiveFire(fireSize == FireSize.LARGE, spreadRisk == Risk.HIGH)
 then
@@ -130,6 +158,8 @@ then
 end
 
 rule "AdditionalUnits - Rule 2"
+no-loop true
+agenda-group "update-fire"
 when
     $f: ActiveFire(fireSize == FireSize.BLOCK, spreadRisk == Risk.HIGH)
 then
@@ -137,6 +167,8 @@ then
 end
 
 rule "AdditionalUnits - Rule 3"
+no-loop true
+agenda-group "update-fire"
 when
     $f: ActiveFire(fireSize == FireSize.LARGE, spreadRisk == Risk.MODERATE)
 then
@@ -144,6 +176,8 @@ then
 end
 
 rule "AdditionalUnits - Rule 4"
+no-loop true
+agenda-group "update-fire"
 when
     $f: ActiveFire(fireSize == FireSize.BLOCK, spreadRisk == Risk.MODERATE)
 then
@@ -151,6 +185,8 @@ then
 end
 
 rule "AdditionalUnits - Rule 5"
+no-loop true
+agenda-group "update-fire"
 when
     $f: ActiveFire(fireSize == FireSize.MEDIUM, spreadRisk == Risk.HIGH || spreadRisk == Risk.MODERATE, numOfFirePoints > 5)
 then
@@ -158,6 +194,8 @@ then
 end
 
 rule "Ventilation - Rule 1"
+no-loop true
+agenda-group "update-fire"
 when
     $fi: FireIncident($id : id, smoke == SmokeType.MODERATE)
     $f: ActiveFire($id == fireIncidentId)
@@ -166,6 +204,8 @@ then
 end
 
 rule "Ventilation - Rule 2"
+no-loop true
+agenda-group "update-fire"
 when
     $fi: FireIncident($id : id, smoke == SmokeType.THICK)
     $f: ActiveFire($id == fireIncidentId)

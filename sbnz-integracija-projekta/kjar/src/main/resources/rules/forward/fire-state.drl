@@ -11,7 +11,7 @@ import com.ftn.sbnz.model.models.enums.Risk;
 import com.ftn.sbnz.model.models.enums.FireDevelopmentLocation;
 import com.ftn.sbnz.model.models.enums.StructureType;
 
-rule "Assign WindSpeed - LOW"
+rule "Assign WindSpeed - LOW" salience 10
 no-loop true
 when
     $fi: FireIncident(windSpeed <= 1.2, $id : id)
@@ -20,7 +20,7 @@ then
     modify($f) { setWindSpeed(WindSpeed.LOW) };
 end
 
-rule "Assign WindSpeed - MODERATE"
+rule "Assign WindSpeed - MODERATE" salience 10
 no-loop true
 when
     $fi: FireIncident(windSpeed > 1.2 && windSpeed <= 9.3, $id : id)
@@ -29,7 +29,7 @@ then
     modify($f) { setWindSpeed(WindSpeed.MODERATE) };
 end
 
-rule "Assign WindSpeed - HIGH"
+rule "Assign WindSpeed - HIGH" salience 10
 no-loop true
 when
     $fi: FireIncident(windSpeed > 9.3, $id : id)

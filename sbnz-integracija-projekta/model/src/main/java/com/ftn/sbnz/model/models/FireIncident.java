@@ -214,4 +214,25 @@ public class FireIncident implements Serializable {
     public void setFinished(boolean finished) {
         this.finished = finished;
     }
+
+    @Override
+    public String toString() {
+        return "FireIncident{" +
+                "id=" + id +
+                ", matter=" + matter +
+                ", structure=" + structure +
+                ", flames=" + flames +
+                ", volume=" + volume +
+                ", smoke=" + smoke +
+                ", windSpeed=" + windSpeed +
+                ", windDirection=" + windDirection +
+                ", proximityToResidentialArea=" + proximityToResidentialArea +
+                ", roomPlacement=" + roomPlacement +
+                ", voltage=" + voltage +
+                ", peopleInVicinity=" + peopleInVicinity +
+                ", proximityOfPeopleToFire=" + proximityOfPeopleToFire +
+                ", fireCompany=" + fireCompany +
+                ", finished=" + finished +
+                '}';
+    }
 }

@@ -1,6 +1,7 @@
 package com.ftn.sbnz.service.controllers;
 
 import com.ftn.sbnz.model.models.FireCompany;
+import com.ftn.sbnz.model.models.MessageResponse;
 import com.ftn.sbnz.model.models.users.User;
 import com.ftn.sbnz.service.dto.*;
 import com.ftn.sbnz.service.security.jwtUtils.TokenUtils;
@@ -53,15 +54,15 @@ public class UserController {
     @PostMapping(value="/register-firefighter", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAnyRole('CAPTAIN', 'CHIEF')")
     public ResponseEntity<?> registerFirefighter(@RequestBody UserDTO dto) {
-        UserDTO ret = userService.insert(dto, User.UserRole.FIREFIGHTER);
-        return new ResponseEntity<UserDTO>(ret, HttpStatus.OK);
+        UserDataDTO ret = userService.insert(dto, User.UserRole.FIREFIGHTER);
+        return new ResponseEntity<UserDataDTO>(ret, HttpStatus.OK);
     }
 
     @PostMapping(value="/register-captain", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('CHIEF')")
     public ResponseEntity<?> registerCaptain(@RequestBody UserDTO dto) {
-        UserDTO ret = userService.insert(dto, User.UserRole.CAPTAIN);
-        return new ResponseEntity<UserDTO>(ret, HttpStatus.OK);
+        UserDataDTO ret = userService.insert(dto, User.UserRole.CAPTAIN);
+        return new ResponseEntity<UserDataDTO>(ret, HttpStatus.OK);
     }
 
     @PostMapping(value="/register-company", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)

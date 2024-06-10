@@ -1,6 +1,7 @@
 package com.ftn.sbnz.model.models;
 
 import com.ftn.sbnz.model.models.enums.*;
+import org.kie.api.definition.type.Position;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -8,6 +9,7 @@ import java.util.Set;
 
 public class ActiveFire implements Serializable {
     private static final long serialVersionUID = 1L;
+    @Position(0)
     private Long fireIncidentId;
     private FireClass fireClass;
     private WindSpeed windSpeed;

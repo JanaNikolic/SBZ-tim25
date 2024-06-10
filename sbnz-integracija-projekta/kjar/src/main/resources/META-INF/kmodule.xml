@@ -1,15 +1,9 @@
 <kmodule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://jboss.org/kie/6.0.0/kmodule">
-    <kbase name="bwBase" packages="forward" default="true">
-        <ksession name="bwKsession"/>
+    <kbase name="fwBase" packages="forward" default="true">
+        <ksession name="fwKsession"/>
     </kbase>
     <kbase name="cepKbase" eventProcessingMode="stream" packages="cep">
-        <ksession name="cepKsession" clockType="pseudo"/>
-    </kbase>
-    <kbase name="template-simple-KBase" packages="templates">
-        <ksession name="templateKsession"/>
-    </kbase>
-    <kbase name="observationBase" packages="firefighterObservation">
-        <ksession name="foKsession"/>
+        <ksession name="cepKsession" clockType="realtime"/>
     </kbase>
     <kbase name="backwardBase" packages="backward">
         <ksession name="backwardKsession"/>

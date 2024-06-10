@@ -1,15 +1,17 @@
 package com.ftn.sbnz.service.controllers;
 
-import com.ftn.sbnz.model.models.ActiveFire;
-import com.ftn.sbnz.model.models.FireIncident;
+import com.ftn.sbnz.model.models.*;
 import com.ftn.sbnz.service.dto.FireIncidentDTO;
+import com.ftn.sbnz.service.dto.FirefighterObservationDTO;
 import com.ftn.sbnz.service.services.FireIncidentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 
@@ -30,6 +32,12 @@ public class FireIncidentController {
         return fireIncidentService.createFireIncident(fire, token);
     }
 
+    @RequestMapping(value = "{id}/observation", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+    @PreAuthorize("hasRole('CAPTAIN')")
+    public ActiveFire postFirefighterObservation(@RequestBody FirefighterObservationDTO observationDTO, @RequestHeader("Authorization") String token, @PathVariable String id) {
+        return fireIncidentService.insertObservations(observationDTO, token, id);
+    }
+
     @RequestMapping (value = "/{id}/finish", produces = "application/json")
     @PreAuthorize("hasRole('CAPTAIN')")
     public ResponseEntity<Void> finishFireIncident(@PathVariable Long id, @RequestHeader("Authorization") String token) {
@@ -39,10 +47,16 @@ public class FireIncidentController {
 
     @RequestMapping(value = "/active", method = RequestMethod.GET, produces = "application/json")
     @PreAuthorize("hasAnyRole('CAPTAIN', 'FIREFIGHTER')")
-    public ResponseEntity<FireIncidentDTO> getActiveFireIncidents() {
-        FireIncident activeFireIncident = fireIncidentService.getActiveFireIncident();
-        return ResponseEntity.ok(new FireIncidentDTO(activeFireIncident));
+    public ResponseEntity<FireIncidentDTO> getActiveFireIncident(@RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok(fireIncidentService.getActiveFireIncident(token));
     }
+
+//    @RequestMapping(value = "/all-active", method = RequestMethod.GET, produces = "application/json")
+//    @PreAuthorize("hasRole('CHIEF')")
+//    public ResponseEntity<List<FireIncidentDTO>> getAllActiveFireIncidents() {
+//        List<FireIncidentDTO> activeFireIncidents = fireIncidentService.getActiveFireIncidents();
+//        return ResponseEntity.ok(activeFireIncidents);
+//    }
 
     @RequestMapping(value = "/all", method = RequestMethod.GET, produces = "application/json")
     @PreAuthorize("hasRole('CHIEF')")
@@ -57,4 +71,31 @@ public class FireIncidentController {
         List<FireIncidentDTO> activeFireIncidents = fireIncidentService.getAllFireIncidents(token);
         return ResponseEntity.ok(activeFireIncidents);
     }
+
+//    @RequestMapping(value = "/{fireId}/{firefighterId}", method = RequestMethod.POST, produces = "application/json")
+//    @PreAuthorize("hasAnyRole('CAPTAIN')")
+//    public ResponseEntity<?> firefighterActivity(@PathVariable Long fireId, @PathVariable Long firefighterId) {
+//        return ResponseEntity.ok(fireIncidentService.firefighterActivity(fireId, firefighterId));
+//    }
+
+    @RequestMapping(value = "/firefighter-stats", method = RequestMethod.POST, produces = "application/json")
+    @PreAuthorize("hasAnyRole('CAPTAIN')")
+    public ResponseEntity<?> firefighterStats(@RequestBody Firefighter firefighter) {
+        return ResponseEntity.ok(fireIncidentService.firefighterStats(firefighter));
+    }
+
+    @RequestMapping(value = "/{fireId}/actions", method = RequestMethod.GET, produces = "application/json")
+    @PreAuthorize("hasAnyRole('CAPTAIN')")
+    public ResponseEntity<List<Action>> getFireActions(@PathVariable Long fireId) {
+        List<Action> actions = fireIncidentService.getFireActions(fireId);
+        return ResponseEntity.ok(actions);
+    }
+
+    @RequestMapping(value = "/validate-report", method = RequestMethod.POST, produces = "application/json")
+    @PreAuthorize("hasAnyRole('CAPTAIN', 'CHIEF')")
+    public ResponseEntity<MessageResponse> validateReport(@RequestBody IncidentReport report) {
+        String result = fireIncidentService.validateIncidentReport(report);
+        return ResponseEntity.ok(new MessageResponse(result));
+    }
+
 }

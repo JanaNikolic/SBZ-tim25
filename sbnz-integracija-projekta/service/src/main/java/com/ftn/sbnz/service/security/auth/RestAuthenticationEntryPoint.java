@@ -4,6 +4,7 @@ import com.ftn.sbnz.model.models.exceptions.PasswordMismatchException;
 import com.ftn.sbnz.model.models.exceptions.StorageException;
 import com.ftn.sbnz.model.models.exceptions.UserAlreadyExistsException;
 import com.ftn.sbnz.model.models.exceptions.UserNotFoundException;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
@@ -11,16 +12,19 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 @ControllerAdvice
 public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
-
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, authException.getMessage());
+    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
+        Throwable cause = authException.getCause();
+        if (cause instanceof ExpiredJwtException) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Token has expired. Login again!");
+        } else {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, authException.getMessage());
+        }
     }
 
     @ExceptionHandler(value = {AccessDeniedException.class})

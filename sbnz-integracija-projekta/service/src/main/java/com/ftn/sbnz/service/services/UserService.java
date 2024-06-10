@@ -7,6 +7,7 @@ import com.ftn.sbnz.model.models.users.User;
 import com.ftn.sbnz.service.dto.FireCompanyDTO;
 import com.ftn.sbnz.service.dto.FireCompanyResponseDTO;
 import com.ftn.sbnz.service.dto.UserDTO;
+import com.ftn.sbnz.service.dto.UserDataDTO;
 import com.ftn.sbnz.service.repositories.FireCompanyRepository;
 import com.ftn.sbnz.service.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,20 +42,20 @@ public class UserService implements UserDetailsService {
     }
 
     public User getByEmail(String email) {
-        return userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(""));
+        return userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found!"));
     }
 
-    public UserDTO insert(UserDTO dto, User.UserRole role) {
+    public UserDataDTO insert(UserDTO dto, User.UserRole role) {
         try {
             getByEmail(dto.getEmail());
             throw new UserAlreadyExistsException("User with given email already exists.");
         } catch (UsernameNotFoundException ex) {
             User user = new User(null, dto.getEmail(), dto.getName(), dto.getLastname(),
                     passwordEncoder.encode(dto.getPassword()), role, true, false);
-            userRepository.save(user);
+            user = userRepository.save(user);
             userRepository.flush();
 
-            return dto;
+            return new UserDataDTO(user);
         }
     }
 

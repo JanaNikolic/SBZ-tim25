@@ -59,17 +59,12 @@ public class WebSecurityConfig {
         http.csrf().disable()
                 .exceptionHandling().authenticationEntryPoint(restAuthenticationEntryPoint).and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-                .authorizeHttpRequests((requests) -> {
-                    requests.antMatchers("/api/user/**").permitAll();
-                    requests.anyRequest().authenticated();
-                })
-                .headers();
+                .authorizeRequests().antMatchers("/api/user/login").permitAll().anyRequest().authenticated().and()
+                .addFilterBefore(new TokenAuthenticationFilter(tokenUtils, userDetailsService()), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new CorsFilter(), UsernamePasswordAuthenticationFilter.class);
 
         http.httpBasic().disable();
         http.formLogin().disable();
-
-        http.addFilterBefore(new TokenAuthenticationFilter(tokenUtils, userDetailsService()), UsernamePasswordAuthenticationFilter.class);
-        http.addFilterBefore(new CorsFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

@@ -9,6 +9,7 @@ import com.ftn.sbnz.model.events.FirefighterInactivityEvent;
 import com.ftn.sbnz.model.events.FirefighterProlongedInactivityEvent;
 import com.ftn.sbnz.model.models.*;
 import com.ftn.sbnz.model.models.enums.*;
+import com.ftn.sbnz.model.models.exceptions.CustomException;
 import com.ftn.sbnz.service.services.FireIncidentService;
 import org.drools.core.ClassObjectFilter;
 import org.drools.core.time.SessionPseudoClock;
@@ -192,7 +193,7 @@ public class CEPConfigTest {
     public void test() {
          KieServices ks = KieServices.Factory.get();
          KieContainer kContainer = ks.getKieClasspathContainer();
-         KieSession kieSession = kContainer.newKieSession("foKsession");
+         KieSession kieSession = kContainer.newKieSession("fwKsession");
 
         FireIncident fire = new FireIncident(1L, BurningMatter.WOOD, StructureType.RESIDENTIAL_BUILDING, FlamesType.LOW, 3.5, SmokeType.THICK, 10.2, WindDirection.NORTH, 50.0, RoomPlacement.BASEMENT, null, true, 15.0);
         ActiveFire activeFire = activeFireStatus(fire, kContainer);
@@ -218,16 +219,32 @@ public class CEPConfigTest {
                 1
         );
 
-
+        kieSession.getAgenda().getAgendaGroup("update-fire").setFocus();
         kieSession.insert(fire);
         kieSession.insert(activeFire);
-        kieSession.fireAllRules();
+        int ruleCount = kieSession.fireAllRules();
         System.out.println(activeFire);
+        System.out.println("Rules " + ruleCount);
         kieSession.insert(o1);
         kieSession.insert(o2);
         kieSession.insert(o3);
-        kieSession.fireAllRules();
+        kieSession.getAgenda().getAgendaGroup("update-fire").setFocus();
+        ruleCount = kieSession.fireAllRules();
         System.out.println(activeFire);
+        System.out.println("Rules " + ruleCount);
+
+        // Define the parameter to be used in the query
+        Map<String, Integer> params = new HashMap<>();
+        params.put("$fireId", Math.toIntExact(fire.getId()));
+
+        // Execute the query to find the ActiveFire
+//        QueryResults results = kieSession.getQueryResults("getActiveFireByIncidentId", params);
+        QueryResults results = kieSession.getQueryResults("getActiveFire");
+        if (results.size() == 0) {
+            throw new CustomException("ActiveFire not found for the given Fire Incident");
+        }
+
+        System.out.println((ActiveFire) results.iterator().next().get("$activeFire"));
 
         kieSession.dispose();
       
@@ -249,7 +266,7 @@ public class CEPConfigTest {
 
         kieSession.dispose();
 
-        KieSession kieSession2 = kieContainer.newKieSession("bwKsession");
+        KieSession kieSession2 = kieContainer.newKieSession("fwKsession");
         kieSession2.insert(fire);
         kieSession2.insert(activeFire);
         kieSession2.fireAllRules();

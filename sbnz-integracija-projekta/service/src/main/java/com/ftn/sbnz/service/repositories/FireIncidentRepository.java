@@ -13,4 +13,5 @@ public interface FireIncidentRepository extends JpaRepository<FireIncident, Long
     boolean existsByFireCompanyAndFinishedIsFalse(FireCompany fireCompany);
     Optional<FireIncident> findByFinishedFalse();
     List<FireIncident> findAllByFireCompanyAndFinishedIsTrue(FireCompany fireCompany);
+    Optional<FireIncident> findByFinishedFalseAndFireCompany(FireCompany fireCompany);
 }
