@@ -1,0 +1,117 @@
+package rules.forward
+
+import com.ftn.sbnz.model.models.ActiveFire;
+import com.ftn.sbnz.model.models.FirefighterObservation;
+import com.ftn.sbnz.model.models.enums.FireSize;
+import com.ftn.sbnz.model.models.enums.Risk;
+import com.ftn.sbnz.model.models.enums.WindSpeed;
+import com.ftn.sbnz.model.models.enums.RoomPlacement;
+import com.ftn.sbnz.model.models.FireIncident;
+import com.ftn.sbnz.model.models.Firefighter;
+
+rule "Adjust Fire Size - Flame Intensity"
+no-loop true
+when
+    $f: ActiveFire($id : fireIncidentId, fireSize != FireSize.BLOCK, fireSize != FireSize.LARGE)
+    Number( $avg: doubleValue) from accumulate(
+        FirefighterObservation(fireId == $id, $intensity : flameIntensity),
+        average($intensity)
+    )
+    eval($avg > 20)
+then
+    modify($f) { setFireSize(FireSize.LARGE) };
+end
+
+rule "Adjust Fire Size - Fire Area"
+no-loop true
+agenda-group "update-fire"
+when
+    $f: ActiveFire($id : fireIncidentId, fireSize != FireSize.BLOCK, fireSize != FireSize.LARGE)
+    Number( $avg: doubleValue) from accumulate(
+        FirefighterObservation(fireId == $id, $area : fireArea),
+        average($area)
+    )
+    eval($avg > 20)
+then
+    modify($f) { setFireSize(FireSize.LARGE) };
+end
+
+rule "Adjust Fire Size - Smoke Volume"
+no-loop true
+agenda-group "update-fire"
+when
+    $f: ActiveFire($id : fireIncidentId, fireSize != FireSize.BLOCK, fireSize != FireSize.LARGE)
+    Number( $avg: doubleValue) from accumulate(
+        FirefighterObservation(fireId == $id, $volume : smokeVolume),
+        average($volume)
+    )
+    eval($avg > 20)
+then
+    modify($f) { setFireSize(FireSize.LARGE) };
+end
+
+rule "Adjust Fire Size - Flame Intensity 2"
+no-loop true
+agenda-group "update-fire"
+when
+    $f: ActiveFire($id : fireIncidentId, fireSize == FireSize.SMALL)
+    Number( doubleValue > 10, doubleValue <= 20) from accumulate(
+        FirefighterObservation(fireId == $id, $intensity : flameIntensity),
+        average($intensity)
+    )
+then
+    modify($f) { setFireSize(FireSize.MEDIUM) };
+end
+
+rule "Adjust Fire Size - Fire Area 2"
+no-loop true
+agenda-group "update-fire"
+when
+    $f: ActiveFire($id : fireIncidentId, fireSize == FireSize.SMALL)
+    Number(doubleValue > 10, doubleValue <= 20) from accumulate(
+        FirefighterObservation(fireId == $id, $area : fireArea),
+        average($area)
+    )
+then
+    modify($f) { setFireSize(FireSize.MEDIUM) };
+end
+
+rule "Adjust Fire Size - Smoke Volume 2"
+no-loop true
+agenda-group "update-fire"
+when
+    $f: ActiveFire($id : fireIncidentId, fireSize == FireSize.SMALL)
+    Number( doubleValue > 10, doubleValue <= 20) from accumulate(
+        FirefighterObservation(fireId == $id, $volume : smokeVolume),
+        average($volume)
+    )
+then
+    modify($f) { setFireSize(FireSize.MEDIUM) };
+end
+
+rule "Sum of fire points from Firefighter Observations"
+no-loop true
+agenda-group "update-fire"
+when
+    $af: ActiveFire($id : fireIncidentId)
+    Number( $firePoints: intValue) from accumulate(
+        FirefighterObservation(fireId == $id, $points : numOfFirePoints),
+        sum($points)
+    )
+then
+    modify($af) { setNumOfFirePoints($firePoints) };
+end
+
+rule "Remove finished fire incident"
+agenda-group "cleanup"
+when
+    $fi: FireIncident($id : id, finished == true)
+    $af: ActiveFire($id == fireIncidentId)
+    $fi2: FireIncident(finished == false, $id == id)
+then
+    System.out.println("Removing ActiveFire and FireIncident for FireIncident ID: " + $id);
+    delete($af);
+    delete($fi);
+    delete($fi2);
+end
+
