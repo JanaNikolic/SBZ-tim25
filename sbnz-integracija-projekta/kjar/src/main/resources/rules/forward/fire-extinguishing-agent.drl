@@ -21,8 +21,8 @@ when
     $f: ActiveFire(
         fireIncidentId == $fi.getId(),
         fireClass == FireClass.ClassA,
-        fireSize == FireSize.LARGE,
-        extinguisher == null
+        fireSize == FireSize.LARGE || fireSize == FireSize.MEDIUM
+        //extinguisher == null
     )
 then
     modify($f) { setExtinguisher(ExtinguisherType.WATER) };
@@ -36,8 +36,8 @@ when
     )
     $f: ActiveFire(
         fireIncidentId == $fi.getId(),
-        fireClass == FireClass.ClassA,
-        extinguisher == null
+        fireClass == FireClass.ClassA
+        //extinguisher == null
     )
 then
     modify($f) { setExtinguisher(ExtinguisherType.FOAM) };
@@ -53,8 +53,8 @@ when
     $f: ActiveFire(
         fireIncidentId == $fi.getId(),
         fireClass == FireClass.ClassB,
-        fireSize == FireSize.LARGE,
-        extinguisher == null
+        fireSize == FireSize.LARGE
+        //extinguisher == null
     )
 then
     modify($f) { setExtinguisher(ExtinguisherType.WATER) };
@@ -69,8 +69,8 @@ when
     )
     $f: ActiveFire(
         fireIncidentId == $fi.getId(),
-        fireClass == FireClass.ClassC,
-        extinguisher == null
+        fireClass == FireClass.ClassC
+        //extinguisher == null
     )
 then
     modify($f) { setExtinguisher(ExtinguisherType.WATER), setWarning(WarningType.FIRE_DRIFT_EFFECT) };
@@ -84,8 +84,8 @@ when
     )
     $f: ActiveFire(
         fireIncidentId == $fi.getId(),
-        fireClass == FireClass.ClassB || fireClass == FireClass.ClassC || fireClass == FireClass.ClassA,
-        extinguisher == null
+        fireClass == FireClass.ClassB || fireClass == FireClass.ClassC || fireClass == FireClass.ClassA
+//        extinguisher == null
     )
 then
     modify($f) { setExtinguisher(ExtinguisherType.BCE_POWDER) };
@@ -99,8 +99,8 @@ when
         voltage < 10000
     )
     $f: ActiveFire(
-        fireIncidentId == $fi.getId(),
-        extinguisher == null
+        fireIncidentId == $fi.getId()
+//        extinguisher == null
     )
 then
     modify($f) { setExtinguisher(ExtinguisherType.BCE_POWDER) };
@@ -114,8 +114,8 @@ when
     )
     $f: ActiveFire(
         fireIncidentId == $fi.getId(),
-        fireClass == FireClass.ClassB || fireClass == FireClass.ClassC || fireClass == FireClass.ClassA,
-        extinguisher == null
+        fireClass == FireClass.ClassB || fireClass == FireClass.ClassC || fireClass == FireClass.ClassA
+//        extinguisher == null
     )
 then
     modify($f) { setExtinguisher(ExtinguisherType.ABCE_POWDER) };
@@ -129,8 +129,8 @@ when
     )
     $f: ActiveFire(
         fireIncidentId == $fi.getId(),
-        fireClass == FireClass.ClassB || fireClass == FireClass.ClassC || fireClass == FireClass.ClassA,
-        extinguisher == null
+        fireClass == FireClass.ClassB || fireClass == FireClass.ClassC || fireClass == FireClass.ClassA
+//        extinguisher == null
     )
 then
     modify($f) { setExtinguisher(ExtinguisherType.ABCE_POWDER) };
@@ -144,8 +144,8 @@ when
     )
     $f: ActiveFire(
         fireIncidentId == $fi.getId(),
-        fireClass == FireClass.ClassB || fireClass == FireClass.ClassC || fireClass == FireClass.ClassA,
-        extinguisher == null
+        fireClass == FireClass.ClassB || fireClass == FireClass.ClassC || fireClass == FireClass.ClassA
+//        extinguisher == null
     )
 then
     modify($f) { setExtinguisher(ExtinguisherType.ABCE_POWDER) };
@@ -157,8 +157,8 @@ no-loop true
 when
     $f: ActiveFire(
         fireSize == FireSize.SMALL,
-        fireClass == FireClass.ClassB,
-        extinguisher == null
+        fireClass == FireClass.ClassB
+//        extinguisher == null
     )
 then
     modify($f) { setExtinguisher(ExtinguisherType.CO2), setTypeOfExtinguisher("Snow") };
@@ -171,8 +171,8 @@ when
         structure in (StructureType.ELECTRICAL_INSTALLATION, StructureType.ELECTRONIC_DEVICE, StructureType.LABORATORY, StructureType.PHARMACY, StructureType.ARCHIVE, StructureType.LIBRARY)
     )
     $f: ActiveFire(
-            fireIncidentId == $fi.getId(),
-            extinguisher == null
+            fireIncidentId == $fi.getId()
+//            extinguisher == null
         )
 then
     modify($f) { setExtinguisher(ExtinguisherType.CO2), setTypeOfExtinguisher("Fog") };
@@ -186,8 +186,8 @@ when
     )
     $f: ActiveFire(
             fireIncidentId == $fi.getId(),
-            fireClass == FireClass.ClassC,
-            extinguisher == null
+            fireClass == FireClass.ClassC
+//            extinguisher == null
     )
 then
     modify($f) { setExtinguisher(ExtinguisherType.CO2), setTypeOfExtinguisher("Gas") };
@@ -201,8 +201,8 @@ when
     )
     $f: ActiveFire(
         fireIncidentId == $fi.getId(),
-        fireClass in (FireClass.ClassA, FireClass.ClassB, FireClass.ClassE),
-        extinguisher == null
+        fireClass in (FireClass.ClassA, FireClass.ClassB, FireClass.ClassE)
+//        extinguisher == null
     )
 then
     modify($f) { setExtinguisher(ExtinguisherType.FOAM), setTypeOfExtinguisher("Light Foam") };
@@ -212,7 +212,7 @@ rule "Decide Extinguisher - Medium Foam for Closed Spaces"
 no-loop true
 when
     $f: ActiveFire(
-        extinguisher == null,
+//        extinguisher == null,
         fireDevelopmentLocation == FireDevelopmentLocation.CLOSED_SPACE,
         fireClass in (FireClass.ClassA, FireClass.ClassB, FireClass.ClassE)
     )
@@ -228,8 +228,8 @@ when
     )
     $f: ActiveFire(
         fireIncidentId == $fi.getId(),
-        fireClass == FireClass.ClassA,
-        extinguisher == null
+        fireClass == FireClass.ClassA
+//        extinguisher == null
     )
 then
     modify($f) { setExtinguisher(ExtinguisherType.FOAM), setTypeOfExtinguisher("Heavy Foam") };
@@ -239,7 +239,7 @@ rule "Decide Extinguisher - Heavy Foam for Class A in Closed Spaces"
 no-loop true
 when
     $f: ActiveFire(
-        extinguisher == null,
+//        extinguisher == null,
         fireClass == FireClass.ClassA,
         fireDevelopmentLocation == FireDevelopmentLocation.CLOSED_SPACE
     )
@@ -251,9 +251,35 @@ rule "Decide Extinguisher - Class D"
 no-loop true
 when
     $f: ActiveFire(
-        extinguisher == null,
+//        extinguisher == null,
         fireClass == FireClass.ClassD
     )
 then
     modify($f) { setExtinguisher(ExtinguisherType.DRY_POWDER) };
+end
+
+rule "Decide Extinguisher - Small"
+salience 100
+no-loop true
+when
+    $f: ActiveFire(
+//        extinguisher == null,
+        fireClass == FireClass.ClassA,
+        fireSize == FireSize.SMALL
+    )
+then
+    modify($f) { setExtinguisher(ExtinguisherType.ABCE_POWDER) };
+end
+
+rule "Decide Extinguisher - Medium"
+salience 100
+no-loop true
+when
+    $f: ActiveFire(
+//        extinguisher == null,
+        fireClass == FireClass.ClassA,
+        fireSize == FireSize.MEDIUM
+    )
+then
+    modify($f) { setExtinguisher(ExtinguisherType.WATER) };
 end

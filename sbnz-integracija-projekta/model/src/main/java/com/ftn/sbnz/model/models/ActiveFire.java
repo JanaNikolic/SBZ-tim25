@@ -34,6 +34,7 @@ public class ActiveFire implements Serializable {
         this.shutOffElectricity = false;
         this.shutOffGas = false;
         this.additionalSteps = new HashSet<>();
+        this.numOfFirePoints = 1;
     }
 
     public Long getFireIncidentId() {
