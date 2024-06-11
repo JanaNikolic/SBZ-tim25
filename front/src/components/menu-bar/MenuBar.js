@@ -15,8 +15,8 @@ console.log("MenuBar rendered with userRole:", userRole);
     switch (userRole) {
       case "ROLE_FIREFIGHTER":
         return (
-          <Button color="inherit" component={Link} to="/home">
-            Home
+          <Button color="inherit" component={Link} to="/history">
+            History
           </Button>
         );
       case "ROLE_CAPTAIN":

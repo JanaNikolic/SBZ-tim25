@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -8,8 +8,15 @@ import {
   Typography,
   Grid,
   Alert,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DroppableProps,
+} from "react-beautiful-dnd";
 import axios from "axios";
 
 const stepsOptions = [
@@ -75,26 +82,44 @@ const ValidateReport = () => {
     }
   };
 
+  const StrictModeDroppable = ({ children, ...props }) => {
+    const [enabled, setEnabled] = useState(false);
+    useEffect(() => {
+      const animation = requestAnimationFrame(() => setEnabled(true));
+      return () => {
+        cancelAnimationFrame(animation);
+        setEnabled(false);
+      };
+    }, []);
+    if (!enabled) {
+      return null;
+    }
+    return <Droppable {...props}>{children}</Droppable>;
+  };
+
   return (
     <Container sx={{ mt: 8 }}>
       <Typography variant="h4" gutterBottom>
         Arrange Fire Incident Steps
       </Typography>
-      <Select
-        multiple
-        value={selectedSteps}
-        onChange={handleSelectChange}
-        renderValue={(selected) => selected.join(", ")}
-        sx={{ marginBottom: 2, minWidth: 300 }}
-      >
-        {stepsOptions.map((step) => (
-          <MenuItem key={step} value={step}>
-            {step}
-          </MenuItem>
-        ))}
-      </Select>
+      <FormControl fullWidth>
+        <InputLabel id="steps-label">Steps (select 3 to 5)</InputLabel>
+        <Select
+          multiple
+          value={selectedSteps}
+          onChange={handleSelectChange}
+          renderValue={(selected) => selected.join(", ")}
+          sx={{ marginBottom: 2, minWidth: 300 }}
+        >
+          {stepsOptions.map((step) => (
+            <MenuItem key={step} value={step}>
+              {step}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
       <DragDropContext onDragEnd={onDragEnd}>
-        <Droppable droppableId="steps">
+        <StrictModeDroppable droppableId="steps">
           {(provided) => (
             <Box
               {...provided.droppableProps}
@@ -110,7 +135,7 @@ const ValidateReport = () => {
                       {...provided.dragHandleProps}
                       sx={{
                         padding: 2,
-                        bgcolor: "primary.light",
+                        bgcolor: "secondary.light",
                         borderRadius: 1,
                         textAlign: "center",
                       }}
@@ -125,7 +150,7 @@ const ValidateReport = () => {
               {provided.placeholder}
             </Box>
           )}
-        </Droppable>
+        </StrictModeDroppable>
       </DragDropContext>
       <Grid container justifyContent="flex-end">
         <Button
@@ -138,12 +163,12 @@ const ValidateReport = () => {
         </Button>
       </Grid>
       {errorMessage && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert severity="error" sx={{ mb: 2, width: 200 }}>
           {errorMessage}
         </Alert>
       )}
       {validMessage && (
-        <Alert severity="success" sx={{ mb: 2 }}>
+        <Alert severity="success" sx={{ mb: 2, width: 200 }}>
           {validMessage}
         </Alert>
       )}

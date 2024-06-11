@@ -102,7 +102,7 @@ const App = () => {
             element={
               <RoleBasedGuard
                 component={History}
-                allowedRoles={["ROLE_CAPTAIN", "ROLE_CHIEF"]}
+                allowedRoles={["ROLE_CAPTAIN", "ROLE_CHIEF", "ROLE_FIREFIGHTER"]}
               />
             }
           />

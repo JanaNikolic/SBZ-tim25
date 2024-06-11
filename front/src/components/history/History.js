@@ -23,6 +23,23 @@ const transformText = (text) => {
 const History = () => {
   const [fireIncidents, setFireIncidents] = useState([]);
 
+  const decodeToken = (token) => {
+    try {
+      const base64Url = token.split(".")[1];
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split("")
+          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+          .join("")
+      );
+      return JSON.parse(jsonPayload);
+    } catch (error) {
+      console.error("Error decoding token:", error);
+      return {};
+    }
+  };
+
   useEffect(() => {
     const fetchFireIncidents = async () => {
       try {
@@ -38,11 +55,32 @@ const History = () => {
       }
     };
 
-    fetchFireIncidents();
+    const fetchAllFireIncidents = async () => {
+        try {
+          const accessToken = localStorage.getItem('accessToken');
+          const response = await axios.get('http://localhost:8080/api/fire-incident/all', {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          });
+          setFireIncidents(response.data);
+        } catch (error) {
+          console.error('Failed to fetch fire incidents', error);
+        }
+      };
+
+    const accessToken = localStorage.getItem("accessToken");
+    if (accessToken) {
+      const decodedToken = decodeToken(accessToken);
+      const role = decodedToken.role[0].authority;
+        if (role === "ROLE_CHIEF") fetchAllFireIncidents();
+        else if (role === "ROLE_CAPTAIN" || role === "ROLE_FIREFIGHTER") fetchFireIncidents();
+    }
+    
   }, []);
 
   return (
-    <Container sx={{mt:8, width: "100%"}}>
+    <Container sx={{mt:8, maxWidth: "1600px!important"}}>
       <Typography variant="h4" gutterBottom>Fire Incidents History</Typography>
       <TableContainer component={Paper}>
         <Table>
