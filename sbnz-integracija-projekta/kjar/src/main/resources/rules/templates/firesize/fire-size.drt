@@ -1,0 +1,24 @@
+template header
+attribute
+threshold
+size
+
+package rules.firesize
+
+import com.ftn.sbnz.model.models.ActiveFire;
+import com.ftn.sbnz.model.models.FirefighterObservation;
+import com.ftn.sbnz.model.models.enums.FireSize;
+
+rule "Adjust Fire Size - @{attribute}"
+when
+    $f: ActiveFire($id : fireIncidentId, fireSize != FireSize.BLOCK)
+    Number( doubleValue > @{threshold})) from accumulate(
+        FirefighterObservation(fireId == $id, $value : @{attribute}),
+        average($value)
+    )
+then
+    modify($f) { setFireSize(@{size}) };
+end
+
+end template
+

@@ -1,0 +1,200 @@
+package rules.forward
+
+import com.ftn.sbnz.model.models.ActiveFire;
+import com.ftn.sbnz.model.models.FireIncident;
+import com.ftn.sbnz.model.models.enums.FireClass;
+import com.ftn.sbnz.model.models.enums.StructureType;
+import com.ftn.sbnz.model.models.enums.FireSize;
+import com.ftn.sbnz.model.models.enums.Risk;
+import com.ftn.sbnz.model.models.enums.ExtinguisherType;
+import com.ftn.sbnz.model.models.enums.AdditionalSteps;
+import com.ftn.sbnz.model.models.enums.SmokeType;
+
+query "getActiveFireByIncidentId"(int fireId)
+    $activeFire : ActiveFire($fireId;)
+end
+
+query "getActiveFire"
+    $activeFire : ActiveFire()
+end
+
+rule "Call Gas Company - Rule 1"
+when
+    $f: ActiveFire((fireClass == FireClass.ClassC))
+then
+    modify($f) { setShutOffGas(true) };
+end
+
+rule "Call Gas Company - Rule 2"
+when
+    $fi: FireIncident( structure == StructureType.OFFICE_BUILDING, $id : id)
+    $f: ActiveFire( $id == fireIncidentId,
+          (fireClass == FireClass.ClassA || fireClass == FireClass.ClassB),
+          fireSize == FireSize.MEDIUM || fireSize == FireSize.LARGE)
+then
+    modify($f) { setShutOffGas(true) };
+end
+
+rule "Call Gas Company - Rule 3"
+when
+    $fi: FireIncident( structure == StructureType.RESIDENTIAL_BUILDING, $id : id)
+    $f: ActiveFire((fireClass == FireClass.ClassB || fireClass == FireClass.ClassA),
+          fireSize == FireSize.MEDIUM || fireSize == FireSize.LARGE)
+then
+    modify($f) { setShutOffGas(true) };
+end
+
+
+rule "Call Gas Company - Rule 4"
+when
+    $f: ActiveFire( fireSize == FireSize.MEDIUM || fireSize == FireSize.LARGE, spreadRisk == Risk.HIGH || spreadRisk == Risk.MODERATE)
+then
+    modify($f) { setShutOffGas(true), setShutOffElectricity(true) };
+end
+
+rule "Shut Off Electricity - Rule 1"
+when
+    $f: ActiveFire( fireClass == FireClass.ClassE)
+then
+    modify($f) { setShutOffElectricity(true) };
+end
+
+rule "Shut Off Electricity - Rule 2"
+when
+    $f: ActiveFire( extinguisher == ExtinguisherType.WATER)
+then
+    modify($f) { setShutOffElectricity(true) };
+end
+
+rule "Evacuation - Rule 1"
+agenda-group "update-fire"
+when
+    $fi: FireIncident(peopleInVicinity == true, proximityOfPeopleToFire > 0, proximityOfPeopleToFire < 10, $id : id)
+    $f: ActiveFire( fireIncidentId == $id, fireSize == FireSize.SMALL, spreadRisk == Risk.LOW)
+then
+    modify($f) { setAdditionalSteps(AdditionalSteps.EVACUATION_LOW) };
+end
+
+rule "Evacuation - Rule 2"
+agenda-group "update-fire"
+when
+    $fi: FireIncident(peopleInVicinity == true, proximityOfPeopleToFire > 15, proximityOfPeopleToFire < 20, $id : id)
+    $f: ActiveFire( fireIncidentId == $id, fireSize == FireSize.MEDIUM, spreadRisk == Risk.LOW)
+then
+    modify($f) { setAdditionalSteps(AdditionalSteps.EVACUATION_LOW) };
+end
+
+rule "Evacuation - Rule 3"
+agenda-group "update-fire"
+when
+    $fi: FireIncident($id : id, peopleInVicinity == true, proximityOfPeopleToFire > 0.0 && proximityOfPeopleToFire <= 15.0)
+    $f: ActiveFire( fireIncidentId == $id, fireSize == FireSize.MEDIUM, spreadRisk == Risk.LOW)
+then
+    modify($f) { setAdditionalSteps(AdditionalSteps.EVACUATION_MEDIUM) };
+end
+
+rule "Evacuation - Rule 4"
+agenda-group "update-fire"
+when
+    $fi: FireIncident(peopleInVicinity == true, proximityOfPeopleToFire >= 15, proximityOfPeopleToFire < 20, $id : id)
+    $f: ActiveFire( fireIncidentId == $id, fireSize == FireSize.MEDIUM, spreadRisk == Risk.MODERATE)
+then
+    modify($f) { setAdditionalSteps(AdditionalSteps.EVACUATION_MEDIUM) };
+end
+
+rule "Evacuation - Rule 5"
+agenda-group "update-fire"
+when
+    $fi: FireIncident(peopleInVicinity == true, proximityOfPeopleToFire > 0, proximityOfPeopleToFire < 10, $id : id)
+    $f: ActiveFire( fireIncidentId == $id, fireSize == FireSize.MEDIUM, spreadRisk == Risk.MODERATE)
+then
+    System.out.println("Evacuation - Rule 5");
+    modify($f) { setAdditionalSteps(AdditionalSteps.EVACUATION_HIGH) };
+end
+
+rule "Evacuation - Rule 6"
+agenda-group "update-fire"
+when
+    $fi: FireIncident(peopleInVicinity == true, proximityOfPeopleToFire > 0, proximityOfPeopleToFire < 50, $id : id)
+    $f: ActiveFire( fireIncidentId == $id, fireSize == FireSize.MEDIUM, spreadRisk == Risk.HIGH)
+then
+    System.out.println("Evacuation - Rule 6");
+    modify($f) { setAdditionalSteps(AdditionalSteps.EVACUATION_HIGH) };
+end
+
+rule "Evacuation - Rule 7"
+agenda-group "update-fire"
+when
+    $fi: FireIncident(peopleInVicinity == true, proximityOfPeopleToFire > 0, $id : id)
+    $f: ActiveFire( fireIncidentId == $id, fireSize == FireSize.LARGE)
+then
+    modify($f) { setAdditionalSteps(AdditionalSteps.EVACUATION_HIGH) };
+end
+
+rule "Evacuation and AdditionalUnits - Rule 8"
+agenda-group "update-fire"
+when
+    $fi: FireIncident(peopleInVicinity == true, proximityOfPeopleToFire > 0, $id : id)
+    $f: ActiveFire( fireIncidentId == $id, fireSize == FireSize.BLOCK)
+then
+    modify($f) { setAdditionalSteps(AdditionalSteps.EVACUATION_HIGH), setAdditionalSteps(AdditionalSteps.ADDITIONAL_UNITS) };
+end
+
+rule "AdditionalUnits - Rule 1"
+agenda-group "update-fire"
+when
+    $f: ActiveFire(fireSize == FireSize.LARGE, spreadRisk == Risk.HIGH)
+then
+    modify($f) { setAdditionalSteps(AdditionalSteps.ADDITIONAL_UNITS) };
+end
+
+rule "AdditionalUnits - Rule 2"
+agenda-group "update-fire"
+when
+    $f: ActiveFire(fireSize == FireSize.BLOCK, spreadRisk == Risk.HIGH)
+then
+    modify($f) { setAdditionalSteps(AdditionalSteps.ADDITIONAL_UNITS) };
+end
+
+rule "AdditionalUnits - Rule 3"
+agenda-group "update-fire"
+when
+    $f: ActiveFire(fireSize == FireSize.LARGE, spreadRisk == Risk.MODERATE)
+then
+    modify($f) { setAdditionalSteps(AdditionalSteps.ADDITIONAL_UNITS) };
+end
+
+rule "AdditionalUnits - Rule 4"
+agenda-group "update-fire"
+when
+    $f: ActiveFire(fireSize == FireSize.BLOCK, spreadRisk == Risk.MODERATE)
+then
+    modify($f) { setAdditionalSteps(AdditionalSteps.ADDITIONAL_UNITS) };
+end
+
+rule "AdditionalUnits - Rule 5"
+agenda-group "update-fire"
+when
+    $f: ActiveFire(fireSize == FireSize.MEDIUM, spreadRisk == Risk.HIGH || spreadRisk == Risk.MODERATE, numOfFirePoints > 5)
+then
+    modify($f) { setAdditionalSteps(AdditionalSteps.ADDITIONAL_UNITS) };
+end
+
+rule "Ventilation - Rule 1"
+agenda-group "update-fire"
+when
+    $fi: FireIncident($id : id, smoke == SmokeType.MODERATE)
+    $f: ActiveFire($id == fireIncidentId)
+then
+    modify($f) { setAdditionalSteps(AdditionalSteps.VENTILATION) };
+end
+
+rule "Ventilation - Rule 2"
+agenda-group "update-fire"
+when
+    $fi: FireIncident($id : id, smoke == SmokeType.THICK)
+    $f: ActiveFire($id == fireIncidentId)
+then
+    modify($f) { setAdditionalSteps(AdditionalSteps.VENTILATION) };
+end
+

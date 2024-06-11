@@ -1,0 +1,38 @@
+package rules.backward;
+
+import com.ftn.sbnz.model.models.Step;
+import com.ftn.sbnz.model.models.IncidentReport;
+import com.ftn.sbnz.model.models.ValidStep;
+import java.util.List;
+import java.util.Date;
+
+
+query isValidStepSequence( String currentStep, int index, int id )
+    not Step( nextStep, index + 1, id; )
+    or
+    ( Step( nextStep, index + 1, id ;)
+      and ValidStep( currentStep, nextStep; )
+      and isValidStepSequence( nextStep, index + 1, id ;)
+    )
+end
+
+
+rule "Validate Incident Report"
+when
+    IncidentReport($id: fireId)
+    Step($name: name, order == 1, $id == fireId)
+    isValidStepSequence($name, 1, $id;)
+then
+    System.out.println("Valid Incident Report with Fire ID: " + $id);
+    insert(new String("Valid Incident Report with Fire ID: " + $id));
+end
+
+rule "Invalid Incident Report"
+when
+    IncidentReport($id: fireId)
+    Step($name: name, order == 1, $id == fireId)
+    not (isValidStepSequence($name, 1, $id;))
+then
+    System.out.println("Invalid Incident Report with Fire ID: " + $id);
+    insert(new String("Invalid Incident Report with Fire ID: " + $id));
+end
