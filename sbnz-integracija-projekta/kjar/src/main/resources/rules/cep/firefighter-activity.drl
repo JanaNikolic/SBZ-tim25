@@ -54,20 +54,20 @@ rule "Detect Oxygen Level Change"
 when
     $event: FirefighterHealthChangeEvent($oxygenLevel : oxygenLevel, $firefighterId: firefighterId, oxygenLevel < 80, oxygenLevel >= 50)
     $f: Firefighter(id == $firefighterId, $fireId : fireId)
-    not( Action(fireId == $fireId, firefighterId == $firefighterId, getAction() == WarningType.LACK_O2_LOW))
-    Number(intValue > 0) from accumulate (
+    not( Action(fireId == $fireId, firefighterId == $firefighterId, getAction() == WarningType.LACK_O2_WARN))
+    Number(intValue > 2) from accumulate (
         $changeEvent: FirefighterHealthChangeEvent(
             this != $event,
             firefighterId == $firefighterId,
-            $oxygenLevel <= oxygenLevel,
+            oxygenLevel <= $oxygenLevel,
             this after[0s, 1m] $event
         ), count($changeEvent)
     )
     not (FirefighterProlongedInactivityEvent(firefighterId == $firefighterId, fireId == $fireId))
 then
-    insert(new Action($fireId, $firefighterId, WarningType.LACK_O2_LOW));
+    insert(new Action($fireId, $firefighterId, WarningType.LACK_O2_WARN));
     modify($f){ setOxygenLevel($oxygenLevel)};
-    System.out.println("Detected oxygen change for firefighter ID: " + $firefighterId + " " + $f);
+    System.out.println("LOW Detected oxygen change for firefighter ID: " + $firefighterId + " " + $f);
 end
 
 rule "Detect Oxygen Level Change - Evacuate"
@@ -75,11 +75,11 @@ when
     $event: FirefighterHealthChangeEvent($oxygenLevel : oxygenLevel, $firefighterId: firefighterId, oxygenLevel < 50, oxygenLevel >= 20)
     $f: Firefighter(id == $firefighterId, $fireId : fireId)
     not( Action(fireId == $fireId, firefighterId == $firefighterId, getAction() == WarningType.LACK_O2_MEDIUM_EVACUATE))
-    Number(intValue > 0) from accumulate (
+    Number(intValue > 5) from accumulate (
         $changeEvent: FirefighterHealthChangeEvent(
             this != $event,
             firefighterId == $firefighterId,
-            $oxygenLevel <= oxygenLevel,
+            oxygenLevel <= $oxygenLevel,
             this after[0s, 1m] $event
         ), count($changeEvent)
     )
@@ -87,7 +87,7 @@ when
 then
     insert(new Action($fireId, $firefighterId, WarningType.LACK_O2_MEDIUM_EVACUATE));
     modify($f){ setOxygenLevel($oxygenLevel)};
-    System.out.println("Detected oxygen change for firefighter ID: " + $firefighterId + " " + $f);
+    System.out.println("MEDIUM Detected oxygen change for firefighter ID: " + $firefighterId + " " + $f);
 end
 
 rule "Detect Oxygen Level Change - Needs Rescue"
@@ -95,18 +95,18 @@ when
     $event: FirefighterHealthChangeEvent($oxygenLevel : oxygenLevel, $firefighterId: firefighterId, oxygenLevel < 20)
     $f: Firefighter(id == $firefighterId, $fireId : fireId)
     not( Action(fireId == $fireId, firefighterId == $firefighterId, getAction() == WarningType.LACK_O2_HIGH_RESCUE))
-    Number(intValue > 0) from accumulate (
+    Number(intValue > 5) from accumulate (
         $changeEvent: FirefighterHealthChangeEvent(
             this != $event,
             firefighterId == $firefighterId,
-            $oxygenLevel <= oxygenLevel,
+            oxygenLevel <= $oxygenLevel,
             this after[0s, 1m] $event
         ), count($changeEvent)
     )
 then
     insert(new Action($fireId, $firefighterId, WarningType.LACK_O2_HIGH_RESCUE));
     modify($f){ setOxygenLevel($oxygenLevel)};
-    System.out.println("Detected oxygen change for firefighter ID: " + $firefighterId + " " + $f);
+    System.out.println("HIGH Detected oxygen change for firefighter ID: " + $firefighterId + " " + $oxygenLevel + " " + $f);
 end
 
 rule "Detect Heart Rate Change - Low - Warning"
@@ -114,7 +114,7 @@ when
     $event: FirefighterHealthChangeEvent($heartRate : heartRate, $firefighterId: firefighterId, heartRate < 60 && heartRate >= 50)
     $f: Firefighter(id == $firefighterId, $fireId : fireId)
     not( Action(fireId == $fireId, firefighterId == $firefighterId, getAction() == WarningType.LOW_HEARTBEAT_WARN))
-    Number(intValue > 0) from accumulate (
+    Number(intValue > 2) from accumulate (
         $changeEvent: FirefighterHealthChangeEvent(
             this != $event,
             firefighterId == $firefighterId,
@@ -134,11 +134,11 @@ when
     $event: FirefighterHealthChangeEvent($heartRate : heartRate, $firefighterId: firefighterId, heartRate > 160 && heartRate <= 180)
     $f: Firefighter(id == $firefighterId, $fireId : fireId)
     not( Action(fireId == $fireId, firefighterId == $firefighterId, getAction() == WarningType.HIGH_HEARTBEAT_WARN))
-    Number(intValue > 0) from accumulate (
+    Number(intValue > 2) from accumulate (
         $changeEvent: FirefighterHealthChangeEvent(
             this != $event,
             firefighterId == $firefighterId,
-            $heartRate >= heartRate,
+            $heartRate <= heartRate,
             this after[0s, 1m] $event
         ), count($changeEvent)
     )
@@ -154,11 +154,11 @@ when
     $event: FirefighterHealthChangeEvent($heartRate : heartRate, $firefighterId: firefighterId, heartRate < 50 && heartRate >= 40)
     $f: Firefighter(id == $firefighterId, $fireId : fireId)
     not( Action(fireId == $fireId, firefighterId == $firefighterId, getAction() == WarningType.LOW_HEARTBEAT_EVACUATE))
-    Number(intValue > 0) from accumulate (
+    Number(intValue > 5) from accumulate (
         $changeEvent: FirefighterHealthChangeEvent(
             this != $event,
             firefighterId == $firefighterId,
-            $heartRate <= heartRate,
+            $heartRate >= heartRate,
             this after[0s, 1m] $event
         ), count($changeEvent)
     )
@@ -174,11 +174,11 @@ when
     $event: FirefighterHealthChangeEvent($heartRate : heartRate, $firefighterId: firefighterId, heartRate > 180 && heartRate <= 200)
     $f: Firefighter(id == $firefighterId, $fireId : fireId)
     not( Action(fireId == $fireId, firefighterId == $firefighterId, getAction() == WarningType.HIGH_HEARTBEAT_EVACUATE))
-    Number(intValue > 0) from accumulate (
+    Number(intValue > 5) from accumulate (
         $changeEvent: FirefighterHealthChangeEvent(
             this != $event,
             firefighterId == $firefighterId,
-            $heartRate >= heartRate,
+            $heartRate <= heartRate,
             this after[0s, 1m] $event
         ), count($changeEvent)
     )
@@ -194,11 +194,11 @@ when
     $event: FirefighterHealthChangeEvent($heartRate : heartRate, $firefighterId: firefighterId, heartRate < 40)
     $f: Firefighter(id == $firefighterId, $fireId : fireId)
     not( Action(fireId == $fireId, firefighterId == $firefighterId, getAction() == WarningType.LOW_HEARTBEAT_RESCUE))
-    Number(intValue > 0) from accumulate (
+    Number(intValue > 5) from accumulate (
         $changeEvent: FirefighterHealthChangeEvent(
             this != $event,
             firefighterId == $firefighterId,
-            $heartRate <= heartRate,
+            $heartRate >= heartRate,
             this after[0s, 1m] $event
         ), count($changeEvent)
     )
@@ -213,11 +213,11 @@ when
     $event: FirefighterHealthChangeEvent($heartRate : heartRate, $firefighterId: firefighterId, heartRate > 200)
     $f: Firefighter(id == $firefighterId, $fireId : fireId)
     not( Action(fireId == $fireId, firefighterId == $firefighterId, getAction() == WarningType.HIGH_HEARTBEAT_RESCUE))
-    Number(intValue > 0) from accumulate (
+    Number(intValue > 5) from accumulate (
         $changeEvent: FirefighterHealthChangeEvent(
             this != $event,
             firefighterId == $firefighterId,
-            $heartRate >= heartRate,
+            $heartRate <= heartRate,
             this after[0s, 1m] $event
         ), count($changeEvent)
     )

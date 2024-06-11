@@ -7,6 +7,7 @@ import com.ftn.sbnz.model.models.*;
 import com.ftn.sbnz.model.models.enums.Status;
 import com.ftn.sbnz.model.models.exceptions.CustomException;
 import com.ftn.sbnz.model.models.users.User;
+import com.ftn.sbnz.service.dto.ActionDTO;
 import com.ftn.sbnz.service.dto.FireIncidentDTO;
 import com.ftn.sbnz.service.dto.FirefighterObservationDTO;
 import com.ftn.sbnz.service.repositories.FireIncidentRepository;
@@ -257,16 +258,19 @@ public class FireIncidentService {
         }
         if (actions.size() == 0) return new MessageResponse("Stats registered.");
 
-        return actions; //TODO may not work
+        return actions;
     }
-    public List<Action> getFireActions(Long fireId) {
-        List<Action> actions = new ArrayList<>();
+    public List<ActionDTO> getFireActions(Long fireId) {
+        List<ActionDTO> actions = new ArrayList<>();
         Collection<?> newEvents = cepKieSession.getObjects(new ClassObjectFilter(Action.class));
         for (Object event : newEvents) {
             if (event instanceof Action) {
                 Action action = (Action) event;
                 if (action.getFireId().equals(fireId)) {
-                    actions.add(action);
+                    User user = userService.getById(action.getFirefighterId());
+                    if (user.getRole() == User.UserRole.FIREFIGHTER) {
+                        actions.add(new ActionDTO(user.getId(), action.getAction(), user.getName(), user.getSurname()));
+                    }
                 }
             }
         }
@@ -302,5 +306,22 @@ public class FireIncidentService {
         backwardKieSession.dispose();
 
         return result;
+    }
+
+    public ActiveFire getActiveFire(String token) {
+        String email = tokenUtils.getUsernameFromToken(token.substring(7));
+        User user = this.userService.getByEmail(email);
+
+        FireIncident fireIncident = findActiveFireIncidentForUser(user);
+        Collection<?> newEvents = kieSession.getObjects(new ClassObjectFilter(ActiveFire.class));
+        for (Object event : newEvents) {
+            if (event instanceof ActiveFire) {
+                ActiveFire action = (ActiveFire) event;
+                if (action.getFireIncidentId().equals(fireIncident.getId())) {
+                    return action;
+                }
+            }
+        }
+        return null;
     }
 }

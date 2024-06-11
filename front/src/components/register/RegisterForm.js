@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import {
   registerFirefighter,
@@ -25,9 +25,38 @@ const RegisterForm = () => {
     formState: { errors },
   } = useForm();
   const [role, setRole] = useState("firefighter");
-
+  const [logedInRole, setLogedInRole] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+
+  useEffect(() => {
+    const accessToken = localStorage.getItem("accessToken");
+    if (accessToken) {
+      const decodedToken = decodeToken(accessToken);
+      const role = decodedToken.role[0].authority;
+      if (role === "ROLE_CHIEF") setLogedInRole(true);
+      else if (role === "ROLE_CAPTAIN") setLogedInRole(false);
+    } else {
+      setLogedInRole(false);
+    }
+  }, []);
+
+  const decodeToken = (token) => {
+    try {
+      const base64Url = token.split(".")[1];
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split("")
+          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+          .join("")
+      );
+      return JSON.parse(jsonPayload);
+    } catch (error) {
+      console.error("Error decoding token:", error);
+      return {};
+    }
+  };
 
   const onSubmit = async (data) => {
     try {
@@ -52,13 +81,13 @@ const RegisterForm = () => {
   };
 
   return (
-    <Container maxWidth="xs" sx={{ mt: 10 }}>
+    <Container maxWidth="xs">
       <Box sx={{ mt: 8 }}>
         <Typography variant="h4" component="h1" gutterBottom textAlign="center">
           Register Employe
         </Typography>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <FormControl component="fieldset" sx={{ mb: 2 }}>
+          {logedInRole && (<FormControl component="fieldset" sx={{ mb: 2 }}>
             <FormLabel component="legend">Role</FormLabel>
             <RadioGroup
               row
@@ -77,7 +106,7 @@ const RegisterForm = () => {
                 label="Captain"
               />
             </RadioGroup>
-          </FormControl>
+          </FormControl>)}
           <Box sx={{ mb: 2 }}>
             <TextField
               fullWidth

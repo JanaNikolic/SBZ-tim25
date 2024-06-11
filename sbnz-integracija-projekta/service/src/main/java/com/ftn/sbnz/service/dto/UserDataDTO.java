@@ -3,10 +3,19 @@ package com.ftn.sbnz.service.dto;
 import com.ftn.sbnz.model.models.users.User;
 
 public class UserDataDTO {
+    private Long id;
     private String name;
     private String surname;
     private User.UserRole role;
     private String email;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;
@@ -55,5 +64,6 @@ public class UserDataDTO {
         this.surname = user.getSurname();
         this.role = user.getRole();
         this.email = user.getEmail();
+        this.id = user.getId();
     }
 }

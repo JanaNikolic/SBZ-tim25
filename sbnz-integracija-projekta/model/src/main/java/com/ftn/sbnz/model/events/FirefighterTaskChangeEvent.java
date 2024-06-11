@@ -2,6 +2,7 @@ package com.ftn.sbnz.model.events;
 
 import com.ftn.sbnz.model.models.Firefighter;
 import com.ftn.sbnz.model.models.enums.FirefighterTask;
+import org.kie.api.definition.type.Expires;
 import org.kie.api.definition.type.Role;
 import org.kie.api.definition.type.Timestamp;
 
@@ -9,6 +10,7 @@ import java.util.Date;
 
 @Role(Role.Type.EVENT)
 @Timestamp("timestamp")
+@Expires("2m")
 public class FirefighterTaskChangeEvent {
     private Firefighter firefighter;
     private FirefighterTask task;

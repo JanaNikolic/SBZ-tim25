@@ -66,7 +66,7 @@ console.log("MenuBar rendered with userRole:", userRole);
         </Typography>
         {renderMenuItems()}
         {userRole && (
-          <Button color="secondary" onClick={handleLogout2}>
+          <Button color="inherit" onClick={handleLogout2}>
             Logout
           </Button>
         )}

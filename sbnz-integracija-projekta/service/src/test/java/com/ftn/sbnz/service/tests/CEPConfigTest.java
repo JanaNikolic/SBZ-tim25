@@ -315,9 +315,9 @@ public class CEPConfigTest {
 
         Step step1 = new Step("Shutting Off Gas/Electricity", 1, 1);
         Step step2 = new Step("Evacuation", 2, 1);
-        Step step3 = new Step("Ventilation", 5, 1);
+        Step step3 = new Step("Ventilation", 3, 1);
         Step step4 = new Step("Fire Localization", 4, 1);
-        Step step5 = new Step("Extinguishing Fire", 3, 1);
+        Step step5 = new Step("Extinguishing Fire", 5, 1);
 
         IncidentReport report = new IncidentReport(Arrays.asList(step1, step2, step3, step4, step5), 1);
 

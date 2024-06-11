@@ -9,8 +9,8 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Role(Role.Type.EVENT)
-//@Timestamp("timestamp")
-@Expires("10m")
+@Timestamp("timestamp")
+@Expires("2m")
 public class FirefighterActivityEvent implements Serializable {
 
     private static final long serialVersionUID = 1L;

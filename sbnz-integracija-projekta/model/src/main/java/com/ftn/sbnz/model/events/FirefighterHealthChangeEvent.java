@@ -1,6 +1,6 @@
 package com.ftn.sbnz.model.events;
 
-import com.ftn.sbnz.model.models.Firefighter;
+import org.kie.api.definition.type.Expires;
 import org.kie.api.definition.type.Role;
 import org.kie.api.definition.type.Timestamp;
 
@@ -8,7 +8,8 @@ import java.util.Date;
 import java.util.Objects;
 
 @Role(Role.Type.EVENT)
-//@Timestamp("timestamp")
+@Timestamp("timestamp")
+@Expires("2m")
 public class FirefighterHealthChangeEvent {
     private Long firefighterId;
     private double oxygenLevel;

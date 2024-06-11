@@ -10,7 +10,7 @@ import org.kie.api.definition.type.Role;
 import org.kie.api.definition.type.Timestamp;
 
 @Role(Role.Type.EVENT)
-@Expires("30m")
+@Expires("2m")
 @Timestamp("timestamp")
 public class FirefighterInactivityEvent implements Serializable {
 

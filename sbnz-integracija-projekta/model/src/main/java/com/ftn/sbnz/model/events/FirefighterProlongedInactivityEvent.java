@@ -1,5 +1,6 @@
 package com.ftn.sbnz.model.events;
 
+import org.kie.api.definition.type.Expires;
 import org.kie.api.definition.type.Role;
 import org.kie.api.definition.type.Timestamp;
 
@@ -9,6 +10,7 @@ import java.util.Objects;
 
 @Role(Role.Type.EVENT)
 @Timestamp("timestamp")
+@Expires("5m")
 public class FirefighterProlongedInactivityEvent implements Serializable {
     private static final long serialVersionUID = 1L;
     private Date timestamp;

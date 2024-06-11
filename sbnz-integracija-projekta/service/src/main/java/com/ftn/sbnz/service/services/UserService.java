@@ -113,4 +113,8 @@ public class UserService implements UserDetailsService {
         }
         return firefightersWithoutCompany;
     }
+
+    public User getById(Long id) {
+        return userRepository.findById(id).orElseThrow(() -> new CustomException("User not found!"));
+    }
 }

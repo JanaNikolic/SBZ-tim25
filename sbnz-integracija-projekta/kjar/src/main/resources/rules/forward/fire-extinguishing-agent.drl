@@ -84,7 +84,7 @@ when
     )
     $f: ActiveFire(
         fireIncidentId == $fi.getId(),
-        fireClass == FireClass.ClassB || fireClass == FireClass.ClassC,
+        fireClass == FireClass.ClassB || fireClass == FireClass.ClassC || fireClass == FireClass.ClassA,
         extinguisher == null
     )
 then
